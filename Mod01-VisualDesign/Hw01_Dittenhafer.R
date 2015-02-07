@@ -40,7 +40,7 @@ g1 <- g1 + labs(title="Distribution of Companies by State", x="", y="# of Busine
 g1 
 
 # Save the chart to a file.
-ggsave("Figure1.png", width = 4.8, height=6.4, dpi=300)
+ggsave("Figure1.png", width = 4.8, height=6.4, dpi=100)
 
 #######
 # Q2 = Employment in 3rd State
@@ -92,7 +92,7 @@ g2 <- g2 + labs(title=sprintf("Employment by Industry in %s", as.character(state
 g2 
 
 # Save the chart to a file.
-ggsave("Figure2.png", width = 4.8, height=6.4, dpi=300)
+ggsave("Figure2.png", width = 4.8, height=6.4, dpi=100)
 
 # http://stackoverflow.com/questions/5677885/ignore-outliers-in-ggplot2-boxplot
 
@@ -100,11 +100,19 @@ ggsave("Figure2.png", width = 4.8, height=6.4, dpi=300)
 # Q3 = Most Revenue per Employee by Industry
 #
 ok <- complete.cases(inc5k)
-completeData <- stateData[ok,]
-avgEmpRevByInd <- plyr::ddply(completeData, c("Industry"), plyr::summarize, meanEmployees = mean(Employees), meanRevenue = mean(Revenue), .inform=TRUE)
-avgEmpRevByInd$meanRevPerEmp <- avgEmpRevByInd$meanRevenue / avgEmpRevByInd$meanEmployees
+completeData <- inc5k[ok,]
+avgEmpRevByInd <- plyr::ddply(completeData, c("Industry"), plyr::summarize, totalEmployees = sum(Employees), totalRevenue = sum(Revenue), .inform=TRUE)
+avgEmpRevByInd$meanRevPerEmp <- avgEmpRevByInd$totalRevenue / avgEmpRevByInd$totalEmployees
 avgEmpRevByInd <- plyr::arrange(avgEmpRevByInd, meanRevPerEmp, decreasing=TRUE)
 avgEmpRevByInd$Industry <- factor(avgEmpRevByInd$Industry, levels=unique(as.character(avgEmpRevByInd$Industry)) )
+avgEmpRevByInd <- head(avgEmpRevByInd, n=10)
+
+
+# Function to help with labeling Dollars on axis.
+dollarFormat <- function(l) {  
+  l <- prettyNum(l / 1000, big.mark=",", scientific = FALSE)
+  return(sprintf("$%s", l))
+}
 
 # Visualize 
 g3 <- ggplot(data=avgEmpRevByInd, aes(x=Industry, y=meanRevPerEmp)) 
@@ -114,17 +122,10 @@ g3 <- g3 + theme(axis.ticks=element_blank(),
                  panel.background=element_rect(fill="#FBFBFB"),
                  panel.grid.major.y=element_line(color="white", size=0.5),
                  panel.grid.major.x=element_line(color="white", size=0.5))
-#g2 <- g2 + stat_smooth(method=lm,aes(group=1))
-#g2 <- g2 + geom_smooth(aes(group=1))
-#g2 <- g2 + geom_boxplot(outlier.shape=NA)
-#g2 <- g2 + geom_bar(stat="identity") 
-g3 <- g3 + geom_point(position="jitter") 
-#g2 <- g2 + geom_pointrange(aes(ymin=min, ymax=mean + sd))
-#g2 <- g2 + scale_x_discrete(breaks=waiver())
-#g2 <- g2 + scale_y_continuous(breaks=c(seq(0,800,by=200)), minor_breaks=NULL)
-#g2 <- g2 + coord_flip()
-g3 <- g3 + labs(title=sprintf("Revenue per Employee By Industry (Inc 5000)"), x="", y="USD") 
+g3 <- g3 + geom_point() 
+g3 <- g3 + scale_y_continuous(labels=dollarFormat)
+g3 <- g3 + labs(title=sprintf("Top 10 Industries by Revenue per Employee"), x="", y="USD (thousands)") 
 g3 
 
 # Save the chart to a file.
-ggsave("Figure3.png", width = 4.8, height=6.4, dpi=300)
+ggsave("Figure3.png", width = 4.8, height=6.4, dpi=100)
