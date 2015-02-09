@@ -39,7 +39,7 @@ g1 <- g1 + labs(title="Distribution of Companies by State", x="", y="# of Busine
 g1 
 
 # Save the chart to a file.
-ggsave("Figure1.png", width = 4.8, height=6.4, dpi=100)
+ggsave("lecture1\\Figure1.png", width = 4.8, height=6.4, dpi=100)
 
 #######
 # Q2 = Employment in 3rd State
@@ -77,7 +77,7 @@ g2 <- g2 + labs(title=sprintf("Employment by Industry in %s", as.character(state
 g2 
 
 # Save the chart to a file.
-ggsave("Figure2.png", width = 4.8, height=6.4, dpi=100)
+ggsave("lecture1\\Figure2.png", width = 4.8, height=6.4, dpi=100)
 
 # http://stackoverflow.com/questions/5677885/ignore-outliers-in-ggplot2-boxplot
 
@@ -113,4 +113,4 @@ g3 <- g3 + labs(title=sprintf("Top 10 Industries by Revenue per Employee"), x=""
 g3 
 
 # Save the chart to a file.
-ggsave("Figure3.png", width = 4.8, height=6.4, dpi=100)
+ggsave("lecture1\\Figure3.png", width = 4.8, height=6.4, dpi=100)
