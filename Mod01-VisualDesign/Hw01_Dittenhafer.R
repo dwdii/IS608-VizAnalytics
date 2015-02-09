@@ -73,7 +73,7 @@ g2 <- g2 + theme(axis.ticks=element_blank(),
                  panel.grid.major.y=element_line(color="white", size=0.5),
                  panel.grid.major.x=element_line(color="white", size=0.5))
 g2 <- g2 + geom_pointrange(aes(ymin=min, ymax=mean + sd))
-g2 <- g2 + labs(title=sprintf("Employment by Industry in %s", as.character(stateId)), x="", y="Average Employees") 
+g2 <- g2 + labs(title=sprintf("Employment by Industry in %s", as.character(stateId)), x="", y="Average Employees ( +- 1 Std Dev)") 
 g2 
 
 # Save the chart to a file.
