@@ -31,7 +31,6 @@ g1 <- g1 + theme(axis.ticks=element_blank(),
                  panel.background=element_rect(fill="#FBFBFB"),
                  panel.grid.major.y=element_line(color="white", size=0.5),
                  panel.grid.major.x=element_line(color="white", size=0.5))
-#g1 <- g1 + geom_bar(stat="identity") 
 g1 <- g1 + geom_point() 
 g1 <- g1 + scale_x_discrete(breaks=waiver())
 g1 <- g1 + scale_y_continuous(breaks=c(seq(0,800,by=200)), minor_breaks=NULL)
@@ -61,15 +60,9 @@ employmentByIndustry <- plyr::ddply(completeStateData, c("State", "Industry"), p
 employmentByIndustry$min <- employmentByIndustry$mean - employmentByIndustry$sd
 employmentByIndustry$min[employmentByIndustry$min < 0] = 0
 
-#employmentByIndustry <- plyr::arrange(stateData, freq)
-#countByState$State <- factor(countByState$State, levels=unique(as.character(countByState$State)) )
 completeStateDataMSD <- plyr::join(completeStateData, employmentByIndustry, by=c("State", "Industry"))
 
-
 head(completeStateDataMSD)
-
-#nonOutliers <- dplyr::filter(completeStateDataMSD, Employees < mean + (2 * sd))
-
 
 # Visualize 
 g2 <- ggplot(data=employmentByIndustry, aes(x=Industry, y=mean, color=mean)) 
@@ -79,15 +72,7 @@ g2 <- g2 + theme(axis.ticks=element_blank(),
                  panel.background=element_rect(fill="#FBFBFB"),
                  panel.grid.major.y=element_line(color="white", size=0.5),
                  panel.grid.major.x=element_line(color="white", size=0.5))
-#g2 <- g2 + stat_smooth(method=lm,aes(group=1))
-#g2 <- g2 + geom_smooth(aes(group=1))
-#g2 <- g2 + geom_boxplot(outlier.shape=NA)
-#g2 <- g2 + geom_bar(stat="identity") 
-#g2 <- g2 + geom_point(position="jitter") 
 g2 <- g2 + geom_pointrange(aes(ymin=min, ymax=mean + sd))
-#g2 <- g2 + scale_x_discrete(breaks=waiver())
-#g2 <- g2 + scale_y_continuous(breaks=c(seq(0,800,by=200)), minor_breaks=NULL)
-#g2 <- g2 + coord_flip()
 g2 <- g2 + labs(title=sprintf("Employment by Industry in %s", as.character(stateId)), x="", y="Average Employees") 
 g2 
 
