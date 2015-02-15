@@ -12,7 +12,7 @@
 require(bigvis)
 #require(plyr)
 
-dataFile <- "all_PLUTO_data.RData"
+dataFile <- "all_PLUTO_data.csv"
 combineAndSaveData <- FALSE
 if(combineAndSaveData)
 {
@@ -31,7 +31,7 @@ if(combineAndSaveData)
   all <- rbind(bk, bx, mn, qn, si)
 
   # Save
-  save(all, file="all_PLUTO_data.RData")
+  write.csv(all, file=dataFile)
 } else
 {
   # Load from the previously saved file.
