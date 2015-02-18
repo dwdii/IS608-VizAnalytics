@@ -41,6 +41,8 @@ if(combineAndSaveData)
   if(!exists("allData"))
   {
     allData <- read.csv(dataFile)
+    #load("all_PLUTO_data.RData")
+    #allData <- all
   }
 }
 
@@ -52,28 +54,73 @@ head(allData)
 #   A: Many (44198) entries with a YearBuilt=0. When were these building constructed?
 since1850 <- subset(allData, YearBuilt > 1850)
 dist_s <- condense(bin(since1850$YearBuilt, 10))
-autoplot(dist_s)
+autoplot(dist_s) + labs(title="How many buildings were built each year?")
 
-#dist_s
+# Save the chart to a file.
+ggsave("lecture1\\Figure21.png", width = 4.8, height=4.8, dpi=100)
 
 ##### Question 2 #####
 # Create a graph that shows how many buildings of a certain 
 # number of floors where build in each year.
-#floorsYear <- condense(bin(since1850$NumFloors, 2), z=since1850$YearBuilt)
-#autoplot(floorsYear)
 
+# Aggregate counts by year and number of floors
 floorsYear <- plyr::count(since1850, vars = c("NumFloors", "YearBuilt"))
-floorsYearBV <- condense(bin(floorsYear$NumFloors,width=10, origin=5), z=floorsYear$YearBuilt)
-head(floorsYearBV)
 
-g2 <- ggplot(data=floorsYear, aes(x=YearBuilt, y=freq))
-g2 <- g2 + geom_point(data=floorsYear[0  <= floorsYear$NumFloors && floorsYear$NumFloors < 10,])
-g2 <- g2 + geom_point(data=floorsYear[10 <= floorsYear$NumFloors && floorsYear$NumFloors < 20,])
-g2 <- g2 + geom_point(data=floorsYear[20 <= floorsYear$NumFloors && floorsYear$NumFloors < 30,])
-g2 <- g2 + geom_point(data=floorsYear[30 <= floorsYear$NumFloors && floorsYear$NumFloors < 40,])
+# Add a column for rounded tens of stories
+Stories <- round(floorsYear$NumFloors, -1)
+floorsYear <- cbind(floorsYear, Stories)
+#head(floorsYear[floorsYear$NumFloors > 10,])
+
+# Subset to only include 20-70 story buildings when at least one building
+sub <- floorsYear[10 < floorsYear$Stories & floorsYear$Stories <= 70 & floorsYear$freq > 0, ]
+
+# Using ggplot to create this faceted chart
+g2 <- ggplot(data=sub, aes(x=YearBuilt, y=freq, color=freq))
+#g2 <- g2 + geom_point()
+g2 <- g2 + geom_line()
 g2 <- g2 + scale_y_log10()
-g2 <- g2 + scale_color_gradient(limits=c(3, 100))
-#g2 <- g2 + facet_grid(NumFloors ~ freq, margins=TRUE)
+g2 <- g2 + scale_color_continuous()
+g2 <- g2 + facet_wrap(~ Stories)
+g2 <- g2 + theme(axis.ticks=element_blank(),
+                 axis.text.x=element_text(angle=60,hjust=1),
+                 panel.border = element_rect(color="gray", fill=NA),
+                 panel.background=element_rect(fill="#FBFBFB"),
+                 panel.grid.major.y=element_line(color="white", size=0.5),
+                 panel.grid.major.x=element_line(color="white", size=0.5))
+g2 <- g2 + labs(title="When were N-Story Buildings built?")
 g2
-#
 
+# Save the chart to a file.
+ggsave("lecture1\\Figure22.png", width = 4.8, height=4.8, dpi=100)
+
+
+##### Question 3 #####
+#  Chart showing assessed value per floor around WWII.
+#
+#  - Seems like there is not a relationship. Rather, there is a
+#    spike in early 1930s (depression era), but WWII is fairly similar 
+#    to surrounding time.
+aroundWWII <- subset(allData, 1930 < allData$YearBuilt & allData$YearBuilt < 1955 & allData$NumFloors > 0)
+
+# Compute assessed value per floor excluding land assessment so focus is on building materials
+AssessedValPerFloor <- (aroundWWII$AssessTot - aroundWWII$AssessLand)/ aroundWWII$NumFloors
+aroundWWII <- cbind(aroundWWII, AssessedValPerFloor)
+head(aroundWWII)
+
+# Compute mean assessed value per floor for each year.
+meanAssessedValPerFloorByYear <- plyr::ddply(aroundWWII, "YearBuilt", plyr::summarise, meanAssesedValFl = mean(AssessedValPerFloor))
+head(meanAssessedValPerFloorByYear, 10)
+                                             
+# Create the plot 
+g3 <- ggplot(data=meanAssessedValPerFloorByYear, aes(x=YearBuilt, y=meanAssesedValFl))
+g3 <- g3 + geom_line()
+g3 <- g3 + labs(title="Mean Assessed Value/Floor By Year", y="Mean Assessed Value/Floor")
+g3 <- g3 + theme(axis.ticks=element_blank(),
+                 panel.border = element_rect(color="gray", fill=NA),
+                 panel.background=element_rect(fill="#FBFBFB"),
+                 panel.grid.major.y=element_line(color="white", size=0.5),
+                 panel.grid.major.x=element_line(color="white", size=0.5))
+g3
+
+# Save the chart to a file.
+ggsave("lecture1\\Figure23.png", width = 4.8, height=4.8, dpi=100)
