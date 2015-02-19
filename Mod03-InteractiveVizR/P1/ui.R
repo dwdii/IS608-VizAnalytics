@@ -15,18 +15,22 @@
 library(shiny)
 
 # Define UI for 
-shinyUI(pageWithSidebar(
+shinyUI(fluidPage(
   
   # Application title
-  headerPanel("IS608-3-1: Rank States By Mortality"),
+  titlePanel("IS608-3-1: Rank States By Mortality"),
   
-  sidebarPanel(
-    selectInput("state", "State:", list())
-    ),
+  sidebarLayout(
+  
+    sidebarPanel(
+      selectInput("causeOfDeath", "Cause of Death:", list())
+      )
+    ,
   
   mainPanel(
     h3(textOutput("caption")),
     
-    plotOutput("mpgPlot")
+    dataTableOutput("mortTable")
     )
+  )
 ))
