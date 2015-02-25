@@ -54,7 +54,11 @@ head(allData)
 #   A: Many (44198) entries with a YearBuilt=0. When were these building constructed?
 since1850 <- subset(allData, YearBuilt > 1850)
 dist_s <- condense(bin(since1850$YearBuilt, 10))
-autoplot(dist_s) + labs(title="How many buildings were built each year?")
+autoplot(dist_s) + labs(title="How many buildings were built each year?") + theme(axis.ticks=element_blank(),
+                 panel.border = element_rect(color="gray", fill=NA),
+                 panel.background=element_rect(fill="#FBFBFB"),
+                 panel.grid.major.y=element_line(color="white", size=0.5),
+                 panel.grid.major.x=element_line(color="white", size=0.5))
 
 # Save the chart to a file.
 ggsave("lecture1\\Figure21.png", width = 4.8, height=4.8, dpi=100)
@@ -108,18 +112,46 @@ aroundWWII <- cbind(aroundWWII, AssessedValPerFloor)
 head(aroundWWII)
 
 # Compute mean assessed value per floor for each year.
-meanAssessedValPerFloorByYear <- plyr::ddply(aroundWWII, "YearBuilt", plyr::summarise, meanAssesedValFl = mean(AssessedValPerFloor))
-head(meanAssessedValPerFloorByYear, 10)
+meanAssessedValPerFloorByYear <- plyr::ddply(aroundWWII, "YearBuilt", plyr::summarise, meanAssesedValFl = mean(AssessedValPerFloor), sd=sd(AssessedValPerFloor))
+
+# And include 95% confidence interval for use in plot.
+meanAssessedValPerFloorByYear$ucl <- meanAssessedValPerFloorByYear$mean + (1.96 * meanAssessedValPerFloorByYear$sd)
+meanAssessedValPerFloorByYear$lcl <- meanAssessedValPerFloorByYear$mean - (1.96 * meanAssessedValPerFloorByYear$sd)
+
+# Capture outliers that are above the level we want to show
+outliersValue <- meanAssessedValPerFloorByYear$ucl[meanAssessedValPerFloorByYear$ucl > 2500000]
+outliersYear <-  meanAssessedValPerFloorByYear$YearBuilt[meanAssessedValPerFloorByYear$ucl > 2500000]
+outliers <- data.frame(Value=round(outliersValue, 0), YearBuilt=outliersYear)
+outliers <- rbind(outliers, c("95% CI outliers", 1943))
+outliers
+
+# reduce size of upper confidence level
+meanAssessedValPerFloorByYear$ucl[meanAssessedValPerFloorByYear$ucl > 2500000] <- 2500000
+meanAssessedValPerFloorByYear$lcl[meanAssessedValPerFloorByYear$lcl < 0] <- 0
+head(meanAssessedValPerFloorByYear, 15)
+
+# Function to help with labeling Dollars on axis.
+dollarFormat <- function(l) {  
+  l <- prettyNum(l / 1000, big.mark=",", scientific = FALSE)
+  return(sprintf("$%s", l))
+}
                                              
 # Create the plot 
 g3 <- ggplot(data=meanAssessedValPerFloorByYear, aes(x=YearBuilt, y=meanAssesedValFl))
-g3 <- g3 + geom_line()
-g3 <- g3 + labs(title="Mean Assessed Value/Floor By Year", y="Mean Assessed Value/Floor")
+g3 <- g3 + geom_smooth(aes(ymin = lcl, ymax = ucl), stat="identity")
+g3 <- g3 + labs(title="Mean Assessed Value/Floor By Year\r\nwith 95% Confidence Interval", 
+                x="Year Built", y="Mean Assessed Value/Floor (Thousands USD)")
 g3 <- g3 + theme(axis.ticks=element_blank(),
                  panel.border = element_rect(color="gray", fill=NA),
                  panel.background=element_rect(fill="#FBFBFB"),
                  panel.grid.major.y=element_line(color="white", size=0.5),
-                 panel.grid.major.x=element_line(color="white", size=0.5))
+                 panel.grid.major.x=element_line(color="white", size=0.5),
+                 axis.text.y=element_text(angle=60,hjust=1))
+g3 <- g3 + scale_y_continuous(labels=dollarFormat)
+g3 <- g3 + annotate("text", label = c("128,265,717", "<-- 95% CI Outlier"), 
+                    x = c(1933, 1940), 
+                    y = rep(2600000, 2), 
+                    size = rep(3, 2))
 g3
 
 # Save the chart to a file.
