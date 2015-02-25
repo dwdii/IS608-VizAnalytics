@@ -148,7 +148,7 @@ g3 <- g3 + theme(axis.ticks=element_blank(),
                  panel.grid.major.x=element_line(color="white", size=0.5),
                  axis.text.y=element_text(angle=60,hjust=1))
 g3 <- g3 + scale_y_continuous(labels=dollarFormat)
-g3 <- g3 + annotate("text", label = c("128,265,717", "<-- 95% CI Outlier"), 
+g3 <- g3 + annotate("text", label = c("$128,265,717", "<-- 95% CI Outlier"), 
                     x = c(1933, 1940), 
                     y = rep(2600000, 2), 
                     size = rep(3, 2))
