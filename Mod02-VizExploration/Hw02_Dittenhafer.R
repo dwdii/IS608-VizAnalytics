@@ -21,6 +21,7 @@ if(combineAndSaveData)
   #
   # Data downloaded from 
   # http://www.nyc.gov/html/dcp/html/bytes/dwn_pluto_mappluto.shtml
+  # Feb 11, 2015
   #
   path <- "C:\\Users\\Dan\\Downloads\\CUNY-IS608\\nyc_pluto_14v2"
   bk <- read.csv(sprintf("%s\\BK.csv", path))
