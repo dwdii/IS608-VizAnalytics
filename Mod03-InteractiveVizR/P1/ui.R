@@ -14,23 +14,28 @@
 #
 library(shiny)
 
+# Load the data set
+dataUrl <- "https://github.com/jlaurito/CUNY_IS608/blob/master/lecture3/data/cleaned-cdc-mortality-1999-2010.csv?raw=true"
+mort <- read.csv(dataUrl, stringsAsFactors=FALSE)
+mort2010 <- mort[mort$Year == 2010,]
+mortData <- mort2010
+
+# Get a unique/distinct list of states from the data.
+states <- unique(mortData$State)
+causeOfDeath <- unique(mortData$ICD.Chapter)
+
+
 # Define UI for 
 shinyUI(fluidPage(
   
   # Application title
   titlePanel("IS608-3-1: Rank States By Mortality"),
   
-  sidebarLayout(
+  verticalLayout(
   
-    sidebarPanel(
-      selectInput("causeOfDeath", "Cause of Death:", list())
-      )
-    ,
-  
-  mainPanel(
-    h3(textOutput("caption")),
-    
-    dataTableOutput("mortTable")
+  mainPanel( 
+    plotOutput("mortTable"),
+    selectInput("causeOfDeath", "Cause of Death:", choices=causeOfDeath, width="100%")
     )
   )
 ))

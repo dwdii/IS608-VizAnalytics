@@ -1,4 +1,5 @@
 library(shiny)
+library(ggplot2)
 
 # Load the data set
 dataUrl <- "https://github.com/jlaurito/CUNY_IS608/blob/master/lecture3/data/cleaned-cdc-mortality-1999-2010.csv?raw=true"
@@ -33,17 +34,38 @@ shinyServer(function(input, output, session) {
   subMort <- reactive({
     subset(mortData[mortData$ICD.Chapter == input$causeOfDeath,], select=c("State", "Crude.Rate"))
   })
-  output$mortTable <- renderDataTable(subMort())
+  #output$mortTable <- renderDataTable(subMort())
+  
+  outputPlot <- function(){ 
+    in_cause <- input$causeOfDeath
+        
+    data <- subMort()
+    data <- data[order(data$Crude.Rate),]
+    data$State <- factor(data$State, levels=unique(as.character(data$State)) )
+    print(head(data))
+    
+    p <- ggplot(data, aes(x=State, y=Crude.Rate)) 
+    p <- p + geom_point() 
+    p <- p + theme(axis.ticks=element_blank(),
+                   panel.border = element_rect(color="gray", fill=NA),
+                   panel.background=element_rect(fill="#FBFBFB"),
+                   panel.grid.major.y=element_line(color="white", size=0.5),
+                   panel.grid.major.x=element_line(color="white", size=0.5)) 
+    p <- p + coord_flip()
+    print(p) 
+  } 
+  
+  output$mortTable <- renderPlot(outputPlot())
 
   
   # Hook the state combo box so we can populate 
   # with unique list of states from the data.
   # See Also:
   #    http://stackoverflow.com/questions/21465411/r-shiny-passing-reactive-to-selectinput-choices
-  observe({
-    updateSelectInput(session, "causeOfDeath",
-                      choices = outCOD()
-    )})
+  #   observe({
+  #     updateSelectInput(session, "causeOfDeath",
+  #                       choices = outCOD()
+  #     )})
   
   
 })
