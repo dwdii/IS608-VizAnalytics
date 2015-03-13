@@ -10,14 +10,18 @@ library(ggplot2)
 library(googleVis)
 
 # Load the data set from github repo
+crudeRateFactor <- 100000 # I'm assuming the data from URL below is at same factor.
 dataUrl <- "http://github.com/jlaurito/CUNY_IS608/blob/master/lecture3/data/cleaned-cdc-mortality-1999-2010.csv?raw=true"
 mort <- read.csv(dataUrl, stringsAsFactors=FALSE)
 mortData <- mort
 head(mortData)
 summary(mortData)
 
+head(subset(mortData, ICD.Chapter == "Certain infectious and parasitic diseases" & State == "Alabama", 
+     select=c(X, ICD.Chapter, State, Year, Crude.Rate)), 20)
+
 natDeathByCause <- aggregate(cbind(Deaths, Population) ~ ICD.Chapter + Year, mortData, FUN=sum) 
-natDeathByCause$Crude.Rate <- natDeathByCause$Deaths / natDeathByCause$Population
+natDeathByCause$Crude.Rate <- round(natDeathByCause$Deaths / natDeathByCause$Population * crudeRateFactor, 4)
 head(natDeathByCause, 40)
 
 
@@ -41,7 +45,7 @@ shinyServer(function(input, output, session) {
   })
     
   subMort <- reactive({
-    subset(mortData[mortData$ICD.Chapter == input$causeOfDeath,], select=c("State", "Crude.Rate"))
+    subset(mortData, ICD.Chapter == input$causeOfDeath & State == input$state, select=c(Year, Crude.Rate))
   })
   
   # A simple data table (non-visualization)
@@ -71,22 +75,24 @@ shinyServer(function(input, output, session) {
 #   output$mortTable <- renderPlot(outputPlot())
   
   preppedData <- reactive({ 
-    
     data <- subMort()
-    data <- data[order(-data$Crude.Rate),]
-    data$State <- factor(data$State, levels=unique(as.character(data$State)) )
+    data <- data[order(data$Year),]
+    #data <- 
+    colnames(data) <- c("Year", "State.Rate")
+    #print(head(data))
     return (data)
   })
+
+  
   
   # The googleVis bar chart rendition
-  output$mortGvis <- renderGvis({gvisBarChart(preppedData(), 
-                                              xvar="State", 
-                                              yvar=c("Crude.Rate"),
+  output$mortGvis <- renderGvis({gvisLineChart(preppedData(), 
+                                              xvar="Year", 
+                                              yvar=c("State.Rate"),
                                               options=list(width="100%", 
                                                            height="800", 
                                                            chartArea="{top:'10'}",
-                                                           vAxis="{textStyle: {fontSize: '10'}}",
-                                                           axes="{x: {0: {side: 'top', label: 'Crude Rate'}}}"))})
+                                                           vAxis="{textStyle: {fontSize: '10'}}"))})
 
   
   # Hook the state combo box so we can populate 

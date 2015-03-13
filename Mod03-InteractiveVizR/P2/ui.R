@@ -20,7 +20,7 @@ mort <- read.csv(dataUrl, stringsAsFactors=FALSE)
 mortData <- mort
 
 # Get a unique/distinct list of states from the data.
-# states <- unique(mortData$State) # Unused
+states <- unique(mortData$State)
 causeOfDeath <- unique(mortData$ICD.Chapter)
 
 
@@ -33,7 +33,8 @@ shinyUI(fluidPage(
   verticalLayout(
   
   mainPanel( 
-    selectInput("causeOfDeath", "Cause of Death:", choices=causeOfDeath, width="100%")
+    selectInput("state", "State:", choices=states, width="100%")
+    , selectInput("causeOfDeath", "Cause of Death:", choices=causeOfDeath, width="100%")
     , htmlOutput("mortGvis")
     #, plotOutput("mortTable") # Uncomment if you want to show ggplot instead.
 
