@@ -28,14 +28,22 @@ causeOfDeath <- unique(mortData$ICD.Chapter)
 shinyUI(fluidPage(
   
   # Application title
-  titlePanel("IS608-3-2: Mortality Rate - State vs National Avg"),
+  titlePanel("IS608-3-2: Mortality Rate Improvement - State vs National Avg"),
   
-  verticalLayout(
-  
-  mainPanel( 
-    selectInput("state", "State:", choices=states, width="100%")
-    , selectInput("causeOfDeath", "Cause of Death:", choices=causeOfDeath, width="100%")
-    , htmlOutput("mortGvis")
+  #verticalLayout(
+  sidebarLayout(
+    sidebarPanel(selectInput("state", "State:", choices=states, width="100%")
+                 , selectInput("causeOfDeath", "Cause of Death:", choices=causeOfDeath, width="100%"),
+                 helpText("StateDeltaVsNational: Illustrates the State's change from prior year relative ",
+                          "to the National Average change from prior year. Positive values indicate the ",
+                          "State is improving faster than the national average for the given year, and ",
+                          "negatives values indicate the State is improving slower than the national average (or getting worse)."),
+                 helpText("State.Rate and NatAvg.Rate are per 100,000 population."),
+                 helpText("State_delta and National_delta represent the difference for each series versus the prior year.")
+    ),
+    mainPanel( 
+    
+     htmlOutput("mortGvis")
     #, plotOutput("mortTable") # Uncomment if you want to show ggplot instead.
 
     )

@@ -9,20 +9,21 @@ library(shiny)
 library(ggplot2)
 library(googleVis)
 
+
 # Load the data set from github repo
 crudeRateFactor <- 100000 # I'm assuming the data from URL below is at same factor.
 dataUrl <- "http://github.com/jlaurito/CUNY_IS608/blob/master/lecture3/data/cleaned-cdc-mortality-1999-2010.csv?raw=true"
 mort <- read.csv(dataUrl, stringsAsFactors=FALSE)
 mortData <- mort
-head(mortData)
-summary(mortData)
+#head(mortData)
+#summary(mortData)
 
-head(subset(mortData, ICD.Chapter == "Certain infectious and parasitic diseases" & State == "Alabama", 
-     select=c(X, ICD.Chapter, State, Year, Crude.Rate)), 20)
+#head(subset(mortData, ICD.Chapter == "Certain infectious and parasitic diseases" & State == "Alabama", 
+#     select=c(X, ICD.Chapter, State, Year, Crude.Rate)), 20)
 
 natDeathByCause <- aggregate(cbind(Deaths, Population) ~ ICD.Chapter + Year, mortData, FUN=sum) 
-natDeathByCause$Crude.Rate <- round(natDeathByCause$Deaths / natDeathByCause$Population * crudeRateFactor, 4)
-head(natDeathByCause, 40)
+natDeathByCause$NatAvg.Rate <- round(natDeathByCause$Deaths / natDeathByCause$Population * crudeRateFactor, 4)
+#head(natDeathByCause, 40)
 
 
 # Get a unique/distinct list of states from the data.
@@ -45,71 +46,46 @@ shinyServer(function(input, output, session) {
   })
     
   subMort <- reactive({
-    subset(mortData, ICD.Chapter == input$causeOfDeath & State == input$state, select=c(Year, Crude.Rate))
+    subset(mortData, ICD.Chapter == input$causeOfDeath & State == input$state, select=c(Year, Crude.Rate, ICD.Chapter))
   })
   
   # A simple data table (non-visualization)
   #output$mortTable <- renderDataTable(subMort())
   
-  
-  # The following code produces a plot from ggplot
-#   outputPlot <- function(){ 
-#     in_cause <- input$causeOfDeath
-#         
-#     data <- subMort()
-#     data <- data[order(data$Crude.Rate),]
-#     data$State <- factor(data$State, levels=unique(as.character(data$State)) )
-#     print(head(data))
-#     
-#     p <- ggplot(data, aes(x=State, y=Crude.Rate)) 
-#     p <- p + geom_point() 
-#     p <- p + theme(axis.ticks=element_blank(),
-#                    panel.border = element_rect(color="gray", fill=NA),
-#                    panel.background=element_rect(fill="#FBFBFB"),
-#                    panel.grid.major.y=element_line(color="white", size=0.5),
-#                    panel.grid.major.x=element_line(color="white", size=0.5)) 
-#     p <- p + coord_flip()
-#     print(p)  
-#   } 
-#   
-#   output$mortTable <- renderPlot(outputPlot())
-  
   preppedData <- reactive({ 
     data <- subMort()
+    # Sort by year (is this necessary?)
     data <- data[order(data$Year),]
-    #data <- 
-    colnames(data) <- c("Year", "State.Rate")
-    #print(head(data))
+    # Update column names so "State" is more obvious
+    colnames(data) <- c("Year", "State.Rate", "ICD.Chapter")
+    
+    # Merge in the national data so we can include it as 
+    # another series in the visualization
+    data <- merge(data, natDeathByCause, by=c("Year", "ICD.Chapter"))
+    data = dplyr::mutate(data, State_delta = lag(State.Rate) - State.Rate)
+    data = dplyr::mutate(data, National_delta = lag(NatAvg.Rate) - NatAvg.Rate)
+    data = dplyr::mutate(data, StateDeltaVsNational = (State_delta - National_delta))
+    print(head(data))
     return (data)
   })
-
-  
   
   # The googleVis bar chart rendition
-  output$mortGvis <- renderGvis({gvisLineChart(preppedData(), 
+  output$mortGvis <- renderGvis({gvisMerge(gvisLineChart(preppedData(), 
                                               xvar="Year", 
-                                              yvar=c("State.Rate"),
-                                              options=list(width="100%", 
-                                                           height="800", 
+                                              yvar=c("StateDeltaVsNational"),
+                                              options=list(width="800", 
+                                                           height="400", 
                                                            chartArea="{top:'10'}",
-                                                           vAxis="{textStyle: {fontSize: '10'}}"))})
-
-  
-  # Hook the state combo box so we can populate 
-  # with unique list of states from the data.
-  # This is not necessary for the current exercise, but
-  # might be useful later for dynamically populating a dependent list.
-  #
-  # See Also:
-  #    http://stackoverflow.com/questions/21465411/r-shiny-passing-reactive-to-selectinput-choices
-  #
-  # Make the causeOfDeath list a reactive outgoing variable
-  #   outCOD <- reactive(causeOfDeath)
-  #
-  #   observe({
-  #     updateSelectInput(session, "causeOfDeath",
-  #                       choices = outCOD()
-  #     )})
-  
-  
+                                                           vAxis="{textStyle: {fontSize: '18'}}",
+                                                           legend="{ position: 'bottom' }")),
+                                           gvisLineChart(preppedData(), 
+                                              xvar="Year", 
+                                              yvar=c("State.Rate", "NatAvg.Rate", "State_delta", "National_delta"),
+                                              options=list(width="800", 
+                                                           height="400", 
+                                                           chartArea="{top:'7'}",
+                                                           vAxis="{textStyle: {fontSize: '18'}}",
+                                                           legend="{ position: 'bottom' }")), 
+                                          tableOptions="width=\"850\""
+                                          )}) 
 })
