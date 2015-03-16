@@ -18,10 +18,6 @@ mort2010 <- mort[mort$Year == 2010,]
 mortData <- mort2010
 #head(mortData)
 
-# Get a unique/distinct list of states from the data.
-#states <- unique(mortData$State) # unused
-# causeOfDeath <- unique(mortData$ICD.Chapter)
-
 # Define server logic required to plot various variables against mpg
 shinyServer(function(input, output, session) {
   
@@ -86,7 +82,7 @@ shinyServer(function(input, output, session) {
                                                            axes="{x: {0: {side: 'top', label: 'Crude Rate'}}}"))})
 
   
-  # Hook the state combo box so we can populate 
+  # Hook the causeOfDeath combo box so we can populate 
   # with unique list of states from the data.
   # This is not necessary for the current exercise, but
   # might be useful later for dynamically populating a dependent list.
@@ -101,6 +97,5 @@ shinyServer(function(input, output, session) {
   #     updateSelectInput(session, "causeOfDeath",
   #                       choices = outCOD()
   #     )})
-  
   
 })
