@@ -60,24 +60,24 @@ def main():
     #
     # Convert to datetime data type
     data["Date"] = pd.to_datetime(data["Date"])
+
     # Convert to int64 (removes the greater/less than and adds/subtracts 1 so integers are reasonably sortable.
     data["EnteroCountInt64"] = data.EnteroCount.apply(cleanEnteroCount)
-    print(data.dtypes)
-    print(data.head(10))
+    #print(data.dtypes)
 
     #data.sort(columns=["Date", "Site"], ascending=False, inplace=True)
-    #print(data)
+    #print(data.head(10))
 
     dBySiteMaxDate = data.groupby(by=["Site"])["Date"].max()
     dBySiteMaxDate = dBySiteMaxDate.reset_index()
     #dBySiteMaxDate = dBySiteMaxDate.set_index(keys=["Site", "Date"])
-    #dBySiteMaxDate.name = "Date"
+
     print(dBySiteMaxDate)
 
     # Join the site most recent date to the raw data to get
     # the most recent reading for each site.
     dSiteMaxDateEntero = pd.merge(data, dBySiteMaxDate,  how="inner")
-    #print(dSiteMaxDateEntero["EnteroCountInt64"])
+
     # Export so I can double check via excel
     dSiteMaxDateEntero.to_csv("dSiteMaxDateEntero.csv")
 
@@ -86,6 +86,9 @@ def main():
 
     # 1b. List & graph the (10) WORST places to swim in the data set.
     top10PlacesToSwim(dSiteMaxDateEntero, False, 2)
+
+    # 2a. Which sites have been tested most regularly?
+
 
 
 # This is the main of the program.
