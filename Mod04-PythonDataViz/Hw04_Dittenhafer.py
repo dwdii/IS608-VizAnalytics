@@ -22,9 +22,10 @@ def top10PlacesToSwim(dSiteData, bBest, figId):
     dSiteData.sort(columns=["EnteroCountInt64"], ascending=bBest, inplace=True)
     top10PlacesToSwim = dSiteData.head(10)
     if bBest:
-        print("Top 10 Best Places to Swim")
+        title = "Top 10 Best Places to Swim"
     else:
-        print("Top 10 Worst Places to Swim")
+        title = "Top 10 Worst Places to Swim"
+    print(title)
     print("=====================")
     print(top10PlacesToSwim[["Site", "EnteroCountInt64"]])
 
@@ -34,7 +35,21 @@ def top10PlacesToSwim(dSiteData, bBest, figId):
     fig2.subplots_adjust(bottom=.3)
     plt.plot(top10PlacesToSwim["EnteroCountInt64"])
     plt1.set_xticklabels(top10PlacesToSwim["Site"].values, rotation='25')
+    plt1.set_ylabel("Entero Count")
+    plt1.set_ylim(0, top10PlacesToSwim["EnteroCountInt64"].max() * 1.1)
+    plt.title(title)
+    plt.show()
 
+def siteWaterTestFrequencyChart(dBySiteCounts, figId, title):
+    fig2 = plt.figure(figId)
+
+    plt1 = fig2.add_subplot(111)
+    fig2.subplots_adjust(bottom=.3)
+    plt.plot(dBySiteCounts)
+    plt1.set_xticklabels(dBySiteCounts.ix.obj, rotation='25')
+    plt1.set_ylabel("Water Tests")
+    plt1.set_ylim(0, dBySiteCounts.max() * 1.1)
+    plt.title(title)
     plt.show()
 
 def cleanEnteroCount(x):
@@ -88,7 +103,14 @@ def main():
     top10PlacesToSwim(dSiteMaxDateEntero, False, 2)
 
     # 2a. Which sites have been tested most regularly?
+    # Hmm... As in most frequently, or on a consistent spread of days?
+    #
+    # First lets look at how many times each site has been tested.
+    dBySiteCounts = data.groupby(by=["Site"])["Date"].count()
+    dBySiteCounts.sort( ascending=False, inplace=True)
+    print(dBySiteCounts.head())
 
+    siteWaterTestFrequencyChart(dBySiteCounts, 3, "Water Test Distribution")
 
 
 # This is the main of the program.
