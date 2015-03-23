@@ -16,7 +16,16 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+
 def top10PlacesToSwim(dSiteData, bBest, figId):
+    """
+    Creates the top 10 best/worst places to swim based on the specified dataset.
+
+    :param dSiteData: the data set.
+    :param bBest: true for best places to swim, false for worst.
+    :param figId: integer id of figure for plotting.
+    :return: none
+    """
 
     dSiteData.set_index(keys=["Site"])
     dSiteData.sort(columns=["EnteroCountInt64"], ascending=bBest, inplace=True)
@@ -41,21 +50,26 @@ def top10PlacesToSwim(dSiteData, bBest, figId):
     plt.show()
 
 def siteWaterTestFrequencyChart(dBySiteCounts, figId, title):
+
+    # Extract top 10 (assuming pre-sorted).
+    top10TestedSites = dBySiteCounts.head(10)
+    print(top10TestedSites)
+
     fig2 = plt.figure(figId)
 
     plt1 = fig2.add_subplot(111)
     fig2.subplots_adjust(bottom=.3)
-    plt.plot(dBySiteCounts)
-    plt1.set_xticklabels(dBySiteCounts.ix.obj, rotation='25')
+    plt.plot(top10TestedSites["Date"])
+    plt1.set_xticklabels(top10TestedSites["Site"], rotation='25')
     plt1.set_ylabel("Water Tests")
-    plt1.set_ylim(0, dBySiteCounts.max() * 1.1)
+    plt1.set_ylim(0, top10TestedSites["Date"].max() * 1.1)
     plt.title(title)
     plt.show()
 
 def cleanEnteroCount(x):
     if x[0] == "<":
         return int(eval(x[1:] + " - 1"))
-    elif x[0] == ">" :
+    elif x[0] == ">":
         return int(eval(x[1:] + " + 1"))
     else:
         return int(x)
@@ -108,10 +122,16 @@ def main():
     # First lets look at how many times each site has been tested.
     dBySiteCounts = data.groupby(by=["Site"])["Date"].count()
     dBySiteCounts.sort( ascending=False, inplace=True)
-    print(dBySiteCounts.head())
+    siteWaterTestFrequencyChart(dBySiteCounts.reset_index(), 3, "Water Test Distribution")
 
-    siteWaterTestFrequencyChart(dBySiteCounts, 3, "Water Test Distribution")
+    # 2b. Which sites have long gaps between tests?
+    #
+    # First we need to figure out how many days have elapsed since the prior test per site.
+    data.sort(columns=["Site", "Date"], inplace=True, ascending=True)
+    data["Date_lagged"] = data.groupby(["Site"])["Date"].shift(1)
+    data["DaysSinceLast"] = data["Date"] - data["Date_lagged"]
 
+    print(data.head())
 
 # This is the main of the program.
 if __name__ == "__main__":
