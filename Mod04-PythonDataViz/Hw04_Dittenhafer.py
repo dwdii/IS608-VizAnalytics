@@ -15,6 +15,7 @@ from decimal import *
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def top10PlacesToSwim(dSiteData, bBest, figId):
@@ -53,18 +54,33 @@ def siteWaterTestFrequencyChart(dBySiteCounts, figId, title):
 
     # Extract top 10 (assuming pre-sorted).
     top10TestedSites = dBySiteCounts.head(10)
+
+    title = "Top 10 Most Frequently Tested Sites"
+    print(title)
+    print("================================")
     print(top10TestedSites)
 
     fig2 = plt.figure(figId)
-
-    plt1 = fig2.add_subplot(111)
     fig2.subplots_adjust(bottom=.3)
-    plt.plot(top10TestedSites["Date"])
-    plt1.set_xticklabels(top10TestedSites["Site"], rotation='25')
-    plt1.set_ylabel("Water Tests")
-    plt1.set_ylim(0, top10TestedSites["Date"].max() * 1.1)
+    ax1 = fig2.add_subplot(111)
+    # Seaborn
+    sns.pointplot("Site", "Date", data=top10TestedSites, join=False, ax=ax1, x_order=top10TestedSites["Site"])
+    ax1.set_xticklabels(top10TestedSites["Site"], rotation='25')
+    ax1.set_ylabel("Water Tests")
+    ax1.set_ylim(0, top10TestedSites["Date"].max() * 1.1)
     plt.title(title)
     plt.show()
+
+    # Old School (Matplotlib raw)
+    # fig2 = plt.figure(figId)
+    #
+    # fig2.subplots_adjust(bottom=.3)
+    # plt.plot(top10TestedSites["Date"])
+    # plt1.set_xticklabels(top10TestedSites["Site"], rotation='25')
+    # plt1.set_ylabel("Water Tests")
+    # plt1.set_ylim(0, top10TestedSites["Date"].max() * 1.1)
+    # plt.title(title)
+    # plt.show()
 
 def cleanEnteroCount(x):
     if x[0] == "<":
@@ -76,6 +92,7 @@ def cleanEnteroCount(x):
 
 def main():
     """Our main function."""
+    sns.set(style="whitegrid")
     sns.set_palette("deep", desat=.6)
     sns.set_context(rc={"figure.figsize": (8, 4)})
 
@@ -128,10 +145,23 @@ def main():
     #
     # First we need to figure out how many days have elapsed since the prior test per site.
     data.sort(columns=["Site", "Date"], inplace=True, ascending=True)
+
+    # http://stackoverflow.com/questions/23664877/pandas-equivalent-of-oracle-lead-lag-function
     data["Date_lagged"] = data.groupby(["Site"])["Date"].shift(1)
     data["DaysSinceLast"] = data["Date"] - data["Date_lagged"]
 
-    print(data.head())
+    # Continuing 2b. What is the median days since last test?
+    d2bNoNaData = data.dropna()
+    d2bNoNaData["DaysSinceLastInt"] = (d2bNoNaData["DaysSinceLast"] / np.timedelta64(1, 'D')).astype(int)
+    d2bSiteMedianDaysSinceLast = d2bNoNaData.groupby(["Site"])["DaysSinceLastInt"].median().reset_index()
+
+    print(d2bSiteMedianDaysSinceLast.head())
+
+    # Looks like typical median is 25-30 days with a couple much shorter.
+    ax1 = sns.pointplot("Site", "DaysSinceLastInt", data=d2bSiteMedianDaysSinceLast)
+    ax1.set_xticklabels(d2bSiteMedianDaysSinceLast["Site"], rotation='25')
+    plt.title("Median Days Since Last Water Test")
+    plt.show()
 
 # This is the main of the program.
 if __name__ == "__main__":
