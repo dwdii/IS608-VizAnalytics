@@ -36,7 +36,7 @@ def top10PlacesToSwim(dSiteData, bBest, figId):
     else:
         title = "Top 10 Worst Places to Swim"
     print(title)
-    print("=====================")
+    print("================================================")
     print(top10PlacesToSwim[["Site", "EnteroCountInt64"]])
 
     fig2 = plt.figure(figId)
@@ -57,7 +57,7 @@ def siteWaterTestFrequencyChart(dBySiteCounts, figId, title):
 
     title = "Top 10 Most Frequently Tested Sites"
     print(title)
-    print("================================")
+    print("=============================================================================")
     print(top10TestedSites)
 
     fig2 = plt.figure(figId)
@@ -65,6 +65,7 @@ def siteWaterTestFrequencyChart(dBySiteCounts, figId, title):
     ax1 = fig2.add_subplot(111)
     # Seaborn
     sns.pointplot("Site", "Date", data=top10TestedSites, join=False, ax=ax1, x_order=top10TestedSites["Site"])
+    # Although seaborn call set_xticklabels for us, we need the rotation so need to call it again...
     ax1.set_xticklabels(top10TestedSites["Site"], rotation='25')
     ax1.set_ylabel("Water Tests")
     ax1.set_ylim(0, top10TestedSites["Date"].max() * 1.1)
@@ -158,9 +159,39 @@ def main():
     print(d2bSiteMedianDaysSinceLast.head())
 
     # Looks like typical median is 25-30 days with a couple much shorter.
-    ax1 = sns.pointplot("Site", "DaysSinceLastInt", data=d2bSiteMedianDaysSinceLast)
+    fig4 = plt.figure(4)
+    fig4.subplots_adjust(bottom=.3)
+    ax1 = fig4.add_subplot(111)
+    ax1 = sns.pointplot("Site", "DaysSinceLastInt", data=d2bSiteMedianDaysSinceLast, ax=ax1)
     ax1.set_xticklabels(d2bSiteMedianDaysSinceLast["Site"], rotation='25')
     plt.title("Median Days Since Last Water Test")
+    plt.show()
+
+    # Continueing 2b. What is standard deviation? Lower Stdev indicates more consistent elapsed days
+    d2bSiteStdevDaysSinceLast = d2bNoNaData.groupby(["Site"])["DaysSinceLastInt"].std()
+    d2bSiteStdevDaysSinceLast.sort(inplace=True, ascending=False)
+
+    # Typical stdev is ~60 days, with some much higher and lower.
+    fig5 = plt.figure(5)
+    fig5.subplots_adjust(bottom=.3, hspace=1.0)
+
+    top10LongStdevDays = d2bSiteStdevDaysSinceLast.head(10).reset_index()
+    print(top10LongStdevDays)
+
+    ax1 = fig5.add_subplot(211)
+    ax1 = sns.pointplot("Site", "DaysSinceLastInt", data=top10LongStdevDays, ax=ax1, x_order=top10LongStdevDays["Site"])
+    ax1.set_xticklabels(top10LongStdevDays["Site"], rotation='20')
+    plt.title("Top 10 Longest")
+
+    top10ShortStdevDays = d2bSiteStdevDaysSinceLast.tail(10).reset_index()
+    print(top10ShortStdevDays)
+
+    ax2 = fig5.add_subplot(212)
+    ax2 = sns.pointplot("Site", "DaysSinceLastInt", data=top10ShortStdevDays, ax=ax2, x_order=top10ShortStdevDays["Site"])
+    ax2.set_xticklabels(top10ShortStdevDays["Site"], rotation='20')
+
+    plt.title("Top 10 Shortest")
+    plt.suptitle("Standard Deviation Days Since Last Water Test")
     plt.show()
 
 # This is the main of the program.
