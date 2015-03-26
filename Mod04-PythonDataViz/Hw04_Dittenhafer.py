@@ -35,18 +35,21 @@ def top10PlacesToSwim(dSiteData, bBest, figId):
         title = "1a) Top 10 Best Places to Swim"
     else:
         title = "1b) Top 10 Worst Places to Swim"
+
+    title = "{0} {1:%b %d %Y} - {2:%b %d %Y}".format(title, top10PlacesToSwim["Date"].min(), top10PlacesToSwim["Date"].max())
     print(title)
-    print("================================================")
-    print(top10PlacesToSwim[["Site", "EnteroCountInt64"]])
+    print("=================================================================")
+    print(top10PlacesToSwim[["Site", "EnteroCountInt64", "Date"]])
 
     fig2 = plt.figure(figId)
 
     plt1 = fig2.add_subplot(111)
     fig2.subplots_adjust(bottom=.3)
-    plt.plot(top10PlacesToSwim["EnteroCountInt64"])
+    plt.plot(top10PlacesToSwim["EnteroCountInt64"], 'b.')
     plt1.set_xticklabels(top10PlacesToSwim["Site"].values, rotation='25')
     plt1.set_ylabel("Entero Count")
     plt1.set_ylim(0, top10PlacesToSwim["EnteroCountInt64"].max() * 1.1)
+
     plt.title(title)
     plt.show()
 
@@ -140,6 +143,8 @@ def RainFallVsEnteroCountAnalysis(theData):
     plt.suptitle("3) Four Day Rain Total vs Entero Count Linear Regression ")
     plt.show()
 
+    print("Appears to be a negligible relationship overall. What about at individual sites?")
+
     # Appears to be a negligible relationship overall. What about at individual sites?
     #
     # Which sites at the most and least rain fall?
@@ -168,7 +173,7 @@ def RainFallVsEnteroCountAnalysis(theData):
     plt.suptitle("3b) {0} Least Four Day Rain Total vs Entero Count Linear Regression".format(leastRainSite))
     plt.show()
 
-    print("It appears the less rain may contribute to greater entero counts based on the Pearson's R values of 0.71")
+    print("It appears that less rain may contribute to greater entero counts based on the Pearson's R values of 0.71.")
 
 def main():
     """Our main function."""
