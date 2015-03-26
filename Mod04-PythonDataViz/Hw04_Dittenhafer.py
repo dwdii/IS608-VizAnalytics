@@ -10,13 +10,13 @@
 #
 __author__ = 'Daniel Dittenhafer'
 
-import csv
-from decimal import *
+#import csv
+#from decimal import *
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
-
+import os.path
 
 def top10PlacesToSwim(dSiteData, bBest, figId):
     """
@@ -32,9 +32,9 @@ def top10PlacesToSwim(dSiteData, bBest, figId):
     dSiteData.sort(columns=["EnteroCountInt64"], ascending=bBest, inplace=True)
     top10PlacesToSwim = dSiteData.head(10)
     if bBest:
-        title = "Top 10 Best Places to Swim"
+        title = "1a) Top 10 Best Places to Swim"
     else:
-        title = "Top 10 Worst Places to Swim"
+        title = "1b) Top 10 Worst Places to Swim"
     print(title)
     print("================================================")
     print(top10PlacesToSwim[["Site", "EnteroCountInt64"]])
@@ -55,7 +55,6 @@ def siteWaterTestFrequencyChart(dBySiteCounts, figId, title):
     # Extract top 10 (assuming pre-sorted).
     top10TestedSites = dBySiteCounts.head(10)
 
-    title = "Top 10 Most Frequently Tested Sites"
     print(title)
     print("=============================================================================")
     print(top10TestedSites)
@@ -91,14 +90,98 @@ def cleanEnteroCount(x):
     else:
         return int(x)
 
+def DaysSinceLastTestStdevChart(theData):
+    """
+    This function computes the stdev on the DaysSinceLastInt column, sorts by the result
+    and displays a multi faceted chart with top 10 largest and smallest stdev sites.
+
+    :param theData: A Pandas DataFrame with the data set
+    """
+    d2bSiteStdevDaysSinceLast = theData.groupby(["Site"])["DaysSinceLastInt"].std()
+    d2bSiteStdevDaysSinceLast.sort(inplace=True, ascending=False)
+
+    # Typical stdev is ~60 days, with some much higher and lower.
+    fig5 = plt.figure(5)
+    fig5.subplots_adjust(bottom=.3, hspace=1.0)
+
+    top10LongStdevDays = d2bSiteStdevDaysSinceLast.head(10).reset_index()
+    print(top10LongStdevDays)
+
+    ax1 = fig5.add_subplot(211)
+    ax1 = sns.pointplot("Site", "DaysSinceLastInt", join=False, data=top10LongStdevDays, ax=ax1,
+                        x_order=top10LongStdevDays["Site"])
+    ax1.set_xticklabels(top10LongStdevDays["Site"], rotation='20')
+    ax1.get_xaxis().set_label_text("")
+    plt.title("Top 10 Least Regularly Tested Sites (Largest Stdev)")
+
+    top10ShortStdevDays = d2bSiteStdevDaysSinceLast.tail(10).reset_index()
+    print(top10ShortStdevDays)
+
+    ax2 = fig5.add_subplot(212)
+    ax2 = sns.pointplot("Site", "DaysSinceLastInt", join=False, data=top10ShortStdevDays, ax=ax2, x_order=top10ShortStdevDays["Site"])
+    ax2.set_xticklabels(top10ShortStdevDays["Site"], rotation='20')
+
+    plt.title("Top 10 Most Regularly Tested Sites (Smallest Stdev)")
+    plt.suptitle("2c) Standard Deviation Days Since Last Water Test")
+    plt.show()
+
+def RainFallVsEnteroCountAnalysis(theData):
+    """
+    This function initially executes the Seaborn jointplot with linear regression enabled to
+    show the relationship (if any) between FourDayRainTotal and EnteroCounts. It then goes deeper
+    to examine the relationship (if any) at individual sites.
+
+    :param theData:  A Pandas DataFrame with the data set
+    :return: None
+    """
+    print(theData.head())
+
+    ax1 = sns.jointplot("FourDayRainTotal", "EnteroCountInt64", theData, kind="reg")
+    plt.suptitle("3) Four Day Rain Total vs Entero Count Linear Regression ")
+    plt.show()
+
+    # Appears to be a negligible relationship overall. What about at individual sites?
+    #
+    # Which sites at the most and least rain fall?
+    rainFallSumTotals = theData.groupby(by=["Site"])["FourDayRainTotal"].sum()
+    rainFallSumTotals = rainFallSumTotals.sort(inplace=False, ascending=False).reset_index()
+    
+    mostRain = rainFallSumTotals.head(1)["Site"].reset_index()
+    leastRain = rainFallSumTotals.tail(1)["Site"].reset_index()
+
+    mostRainSite = mostRain["Site"].item()
+    print("Site w. Most  Rain: {0}".format(mostRainSite))
+    leastRainSite = leastRain["Site"].item()
+    print("Site w. Least Rain: {0}".format(leastRainSite))
+
+    # Subset the data to use in the jointplot
+    mostRainData = theData[theData["Site"] == mostRainSite]
+    leastRainData = theData[theData["Site"] == leastRainSite]
+
+    # Most rain jointplot with OLS
+    ax1 = sns.jointplot("FourDayRainTotal", "EnteroCountInt64", mostRainData, kind="reg")
+    plt.suptitle("3b) {0} Most Four Day Rain Total vs Entero Count Linear Regression".format(mostRainSite))
+    plt.show()
+
+    # Least rain jointplot with OLS
+    ax1 = sns.jointplot("FourDayRainTotal", "EnteroCountInt64", leastRainData, kind="reg")
+    plt.suptitle("3b) {0} Least Four Day Rain Total vs Entero Count Linear Regression".format(leastRainSite))
+    plt.show()
+
+    print("It appears the less rain may contribute to greater entero counts based on the Pearson's R values of 0.71")
+
 def main():
     """Our main function."""
+
+    # Set basic Seaborn related chart properties.
     sns.set(style="whitegrid")
     sns.set_palette("deep", desat=.6)
-    sns.set_context(rc={"figure.figsize": (8, 4)})
+    sns.set_context("talk") #rc={"figure.figsize": (8, 4)})
 
-    # file = "https://github.com/jlaurito/CUNY_IS608/raw/master/lecture4/data/riverkeeper_data_2013.csv"
+    # Use local file if available, otherwise, reference the github repo
     file = "C:\Users\Dan\SkyDrive\GradSchool\IS608-VizAnalytics\data\\riverkeeper_data_2013.txt"
+    if not os.path.isfile(file):
+        file = "https://github.com/jlaurito/CUNY_IS608/raw/master/lecture4/data/riverkeeper_data_2013.csv"
 
     # Load the data
     data = pd.read_csv(file, parse_dates=[2], infer_datetime_format=True)
@@ -115,14 +198,17 @@ def main():
     #data.sort(columns=["Date", "Site"], ascending=False, inplace=True)
     #print(data.head(10))
 
+    # Determine the most recent reading for each site
     dBySiteMaxDate = data.groupby(by=["Site"])["Date"].max()
     dBySiteMaxDate = dBySiteMaxDate.reset_index()
     #dBySiteMaxDate = dBySiteMaxDate.set_index(keys=["Site", "Date"])
 
-    print(dBySiteMaxDate)
+    # Show me
+    #print(dBySiteMaxDate)
 
     # Join the site most recent date to the raw data to get
-    # the most recent reading for each site.
+    # the most recent reading for each site which helps us determine
+    # best/worst current swim locations
     dSiteMaxDateEntero = pd.merge(data, dBySiteMaxDate,  how="inner")
 
     # Export so I can double check via excel
@@ -140,7 +226,7 @@ def main():
     # First lets look at how many times each site has been tested.
     dBySiteCounts = data.groupby(by=["Site"])["Date"].count()
     dBySiteCounts.sort( ascending=False, inplace=True)
-    siteWaterTestFrequencyChart(dBySiteCounts.reset_index(), 3, "Water Test Distribution")
+    siteWaterTestFrequencyChart(dBySiteCounts.reset_index(), 3, "2a) Top 10 Most Frequently Tested Sites")
 
     # 2b. Which sites have long gaps between tests?
     #
@@ -150,49 +236,32 @@ def main():
     # http://stackoverflow.com/questions/23664877/pandas-equivalent-of-oracle-lead-lag-function
     data["Date_lagged"] = data.groupby(["Site"])["Date"].shift(1)
     data["DaysSinceLast"] = data["Date"] - data["Date_lagged"]
+    data.dropna(inplace=True)
 
-    # Continuing 2b. What is the median days since last test?
-    d2bNoNaData = data.dropna()
-    d2bNoNaData["DaysSinceLastInt"] = (d2bNoNaData["DaysSinceLast"] / np.timedelta64(1, 'D')).astype(int)
-    d2bSiteMedianDaysSinceLast = d2bNoNaData.groupby(["Site"])["DaysSinceLastInt"].median().reset_index()
+    # Continuing 2b. What is the mean days since last test?
 
-    print(d2bSiteMedianDaysSinceLast.head())
+    data["DaysSinceLastInt"] = (data["DaysSinceLast"] / np.timedelta64(1, 'D')).astype(int)
+    d2bSiteMedianDaysSinceLast = data.groupby(["Site"])["DaysSinceLastInt"].mean()
+    d2bSiteMedianDaysSinceLast.sort(inplace=True, ascending=False)
+
+    top10MeanDaysSinceLast = d2bSiteMedianDaysSinceLast.head(10).reset_index()
+    print(top10MeanDaysSinceLast)
 
     # Looks like typical median is 25-30 days with a couple much shorter.
     fig4 = plt.figure(4)
     fig4.subplots_adjust(bottom=.3)
     ax1 = fig4.add_subplot(111)
-    ax1 = sns.pointplot("Site", "DaysSinceLastInt", data=d2bSiteMedianDaysSinceLast, ax=ax1)
-    ax1.set_xticklabels(d2bSiteMedianDaysSinceLast["Site"], rotation='25')
-    plt.title("Median Days Since Last Water Test")
+    ax1 = sns.pointplot("Site", "DaysSinceLastInt", data=top10MeanDaysSinceLast, ax=ax1,
+                        x_order=top10MeanDaysSinceLast["Site"])
+    ax1.set_xticklabels(top10MeanDaysSinceLast["Site"], rotation='25')
+    plt.title("2b) Mean Days Since Last Water Test")
     plt.show()
 
-    # Continueing 2b. What is standard deviation? Lower Stdev indicates more consistent elapsed days
-    d2bSiteStdevDaysSinceLast = d2bNoNaData.groupby(["Site"])["DaysSinceLastInt"].std()
-    d2bSiteStdevDaysSinceLast.sort(inplace=True, ascending=False)
+    # Continueing 2c. What is standard deviation? Lower Stdev indicates more consistent elapsed days
+    DaysSinceLastTestStdevChart(data)
 
-    # Typical stdev is ~60 days, with some much higher and lower.
-    fig5 = plt.figure(5)
-    fig5.subplots_adjust(bottom=.3, hspace=1.0)
-
-    top10LongStdevDays = d2bSiteStdevDaysSinceLast.head(10).reset_index()
-    print(top10LongStdevDays)
-
-    ax1 = fig5.add_subplot(211)
-    ax1 = sns.pointplot("Site", "DaysSinceLastInt", data=top10LongStdevDays, ax=ax1, x_order=top10LongStdevDays["Site"])
-    ax1.set_xticklabels(top10LongStdevDays["Site"], rotation='20')
-    plt.title("Top 10 Longest")
-
-    top10ShortStdevDays = d2bSiteStdevDaysSinceLast.tail(10).reset_index()
-    print(top10ShortStdevDays)
-
-    ax2 = fig5.add_subplot(212)
-    ax2 = sns.pointplot("Site", "DaysSinceLastInt", data=top10ShortStdevDays, ax=ax2, x_order=top10ShortStdevDays["Site"])
-    ax2.set_xticklabels(top10ShortStdevDays["Site"], rotation='20')
-
-    plt.title("Top 10 Shortest")
-    plt.suptitle("Standard Deviation Days Since Last Water Test")
-    plt.show()
+    # 3) Is there a relationship between the amount of rain and water quality?
+    RainFallVsEnteroCountAnalysis(data)
 
 # This is the main of the program.
 if __name__ == "__main__":
