@@ -30,7 +30,7 @@ def top10PlacesToSwim(dSiteData, bBest, figId):
 
     dSiteData.set_index(keys=["Site"])
     dSiteData.sort(columns=["EnteroCountInt64"], ascending=bBest, inplace=True)
-    top10PlacesToSwim = dSiteData.head(10)
+    top10PlacesToSwim = dSiteData.head(10).reset_index()
     if bBest:
         title = "1a) Top 10 Best Places to Swim"
     else:
@@ -42,13 +42,12 @@ def top10PlacesToSwim(dSiteData, bBest, figId):
     print(top10PlacesToSwim[["Site", "EnteroCountInt64", "Date"]])
 
     fig2 = plt.figure(figId)
-
-    plt1 = fig2.add_subplot(111)
+    ax1 = fig2.add_subplot(111)
     fig2.subplots_adjust(bottom=.3)
-    plt.plot(top10PlacesToSwim["EnteroCountInt64"], 'b.')
-    plt1.set_xticklabels(top10PlacesToSwim["Site"].values, rotation='25')
-    plt1.set_ylabel("Entero Count")
-    plt1.set_ylim(0, top10PlacesToSwim["EnteroCountInt64"].max() * 1.1)
+    sns.pointplot("Site", "EnteroCountInt64", data=top10PlacesToSwim, join=False, ax=ax1, x_order=top10PlacesToSwim["Site"])
+    ax1.set_xticklabels(top10PlacesToSwim["Site"].values, rotation='25')
+    ax1.set_ylabel("Entero Count")
+    ax1.set_ylim(0, top10PlacesToSwim["EnteroCountInt64"].max() * 1.1)
 
     plt.title(title)
     plt.show()
