@@ -258,7 +258,7 @@ def main():
     ax1 = sns.pointplot("Site", "DaysSinceLastInt", data=top10MeanDaysSinceLast, ax=ax1,
                         x_order=top10MeanDaysSinceLast["Site"])
     ax1.set_xticklabels(top10MeanDaysSinceLast["Site"], rotation='25')
-    plt.title("2b) Mean Days Since Last Water Test")
+    plt.title("2b) Mean Days Since Prior Water Test")
     plt.show()
 
     # Continueing 2c. What is standard deviation? Lower Stdev indicates more consistent elapsed days
