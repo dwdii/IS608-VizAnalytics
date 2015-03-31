@@ -1,0 +1,164 @@
+---
+title: "IS608 Final Project"
+author: "Daniel Dittenhafer"
+date: "Monday, March 23, 2015"
+output: html_document
+---
+```{r, echo=FALSE}
+options(warn=-1)
+repo <- "http://cran.us.r-project.org"
+require.package <- function (package)
+{
+  if(!require(package, quietly=TRUE, character.only=TRUE))
+  {
+    install.packages(package, repos=repo) 
+    library(package, character.only=TRUE)
+  }
+}
+
+require.package("knitcitations")
+require.package("RefManageR")
+
+cleanbib()
+
+cite_options(style="markdown")
+
+bibBirthData <- bibentry(bibtype="Misc",
+                         author=person(family="HHS"),
+                         publisher="United States Department of Health and Human Services (US DHHS), Centers for Disease Control and Prevention (CDC), National Center for Health Statistics (NCHS), Division of Vital Statistics",
+                         title="Natality public-use data 2007-2012 on CDC WONDER Online Database",
+                         year=2015,
+                         month="January",
+                         url="http://wonder.cdc.gov/natality-current.html")
+
+bibLaborData <- bibentry(bibtype="Misc",
+                         author=person(family="U.S. Bureau of Labor Statistics"),
+                         title="Local Area Unemployment Statistics (LAUS)",
+                         year=2015,
+                         url="http://download.bls.gov/pub/time.series/la/")
+```
+
+```{r}
+#####
+# FUNCTION: loadBirthData 
+#
+#
+loadBirthData <- function()
+{
+  # Load the Natality data
+  birthFile <- "C:/Code/R/IS608-VizAnalytics/FinalProject/Data/Natality, 2007-2013-StateCounty.txt"
+  birthData <- read.table(birthFile, 
+                          header=TRUE, 
+                          sep="\t", 
+                          fill=TRUE, 
+                          stringsAsFactors=FALSE,
+                          colClasses=c('character', # Notes
+                                       'character', # Year
+                                       'character', # Year.Code
+                                       'character', # Month
+                                       'character', # Month.Code
+                                       'character', # State
+                                       'character', # State.Code
+                                       'character', # County
+                                       'character', # County.Code
+                                       'numeric'))  # Births
+  
+  #print(birthData[is.na(birthData$Births),])
+  birthDataWoNa <- subset(birthData, !is.na(birthData$Births))  
+  
+  return (birthDataWoNa)
+}
+```
+
+The `loadUnemploymentData` function shown below loads the local area unemployment data along with reference datasets for states and periods `r citep(bibLaborData)`. These data sets are cleaned and joined together to facilitate usage in the visualization later.
+
+```{r}
+#####
+# FUNCTION: loadUnemploymentData 
+#
+#
+loadUnemploymentData <- function()
+{
+  # Load the Local Area Unemployment data
+  path <- "C:/Code/R/IS608-VizAnalytics/FinalProject/Data"
+  dataFile <- sprintf("%s/la.data.3.AllStatesS.txt", path)
+  dataTable <- read.table(dataFile, 
+                          header=TRUE, 
+                          sep="\t", 
+                          fill=TRUE, 
+                          stringsAsFactors=FALSE,
+                          #col.names=c('series_id', 'year', 'period', 'value', 'footnote_codes'),
+                          colClasses=c('character', # series_id
+                                       'numeric',   # year
+                                       'character', # period
+                                       'numeric'   # value
+                                       #, 'character'  # footnote_codes
+                                       ))  
+  
+  # State IDs
+  dataFile <- sprintf("%s/la.state_region_division.txt", path)
+  states <- read.table(dataFile, 
+                          header=TRUE, 
+                          sep="\t", 
+                          fill=TRUE, 
+                          stringsAsFactors=FALSE,
+                          col.names=c('srd_code', 'blank', 'srd_text'),
+                          colClasses=c('character',  # srd_code
+                                       'character' # srd_text
+                                       ))
+  
+  # format for the series id we want (unemployment rate)
+  states$series_id <- paste("LASST", states$srd_code, "0000000000003", sep="") #, 
+  print(head(states))
+  #print(head(dataTable$series_id))
+  
+  # Period IDs (months)
+  dataFile <- sprintf("%s/la.period.txt", path)
+  periods <- read.table(dataFile, 
+                          header=TRUE, 
+                          sep="\t", 
+                          fill=TRUE, 
+                          stringsAsFactors=FALSE,
+                         # col.names=c('srd_code', 'blank', 'srd_text'),
+                          colClasses=c('character', 
+                                       'character'
+                                       ))
+  periods$month <- stringr::str_extract(periods$period, "\\d{2,2}")
+  periods <- subset(periods, periods$period != "M13")
+  print(periods)
+  
+  # Only between 2007 and 2013
+  cleanerData <- subset(dataTable, 2007 <= dataTable$year &  dataTable$year <= 2013)
+  # Trim whitespace off the series_id
+  cleanerData$series_id <- stringr::str_trim(cleanerData$series_id)
+  # join state names and limit to only the unemployment data we care about.
+  cleanerData <- plyr::join(cleanerData, states, by="series_id", type="inner")
+  # join month info and limit to only the months (excluding annual average)
+  cleanerData <- plyr::join(cleanerData, periods, by="period", type="inner")
+  
+  return (cleanerData)
+}
+
+```
+```{r}
+bd <-loadBirthData()
+bd
+
+ud <- loadUnemploymentData()
+head(ud)
+```
+
+The following code snippet saves the massaged local area unemployment data to a comma separated value (CSV) file for later use. 
+
+```{r}
+path <- "C:/Code/R/IS608-VizAnalytics/FinalProject/Data"
+dataFile <- sprintf("%s/LA-States-2007-2013.csv", path)
+write.table(ud, dataFile,sep=",", row.names=FALSE)
+```
+
+### References
+
+```{r, results='asis', echo=FALSE}
+BibOptions(style="html", bib.style="authortitle")
+bibliography()
+```
