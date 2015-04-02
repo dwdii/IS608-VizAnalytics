@@ -65,7 +65,7 @@ loadBirthData <- function()
   
   #print(birthData[is.na(birthData$Births),])
   birthDataWoNa <- subset(birthData, !is.na(birthData$Births))  
-  
+                               
   return (birthDataWoNa)
 }
 ```
@@ -142,18 +142,35 @@ loadUnemploymentData <- function()
 ```
 ```{r}
 bd <-loadBirthData()
-bd
+head(bd)
 
 ud <- loadUnemploymentData()
 head(ud)
 ```
 
-The following code snippet saves the massaged local area unemployment data to a comma separated value (CSV) file for later use. 
+The following code snippet saves the massaged local area unemployment data to a comma separated value (CSV) file for reference and later use. 
 
 ```{r}
 path <- "C:/Code/R/IS608-VizAnalytics/FinalProject/Data"
 dataFile <- sprintf("%s/LA-States-2007-2013.csv", path)
 write.table(ud, dataFile,sep=",", row.names=FALSE)
+```
+
+```{r}
+colnames(bd) <- c("Notes",  "Year",  "Year Code",	
+                             "Month",	"Month Code",	"State",	
+                             "State Code",	"County",	"County Code",	"Births")
+
+colnames(ud) <- c("series_id","Year","period","UnemploymentRate",
+                  "footnote_codes","srd_code","blank",
+                  "State","period_abbr","Month","monthNum")
+
+ubd <- plyr::join(ud, bd, by=c("Year", "Month", "State"), type="inner")
+head(ubd)
+
+dataFile <- sprintf("%s/LA-Natality-Combined.csv", path)
+write.table(ubd, dataFile,sep=",", row.names=FALSE)
+
 ```
 
 ### References
