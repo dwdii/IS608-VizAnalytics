@@ -64,8 +64,46 @@ loadBirthData <- function()
                                        'numeric'))  # Births
   
   #print(birthData[is.na(birthData$Births),])
-  birthDataWoNa <- subset(birthData, !is.na(birthData$Births))  
-                               
+  birthDataWoNa <- subset(birthData, !is.na(birthData$Births), 
+                          select = - c(Notes, County, County.Code))  
+  birthDataWoNa <- dplyr::group_by(birthDataWoNa, 
+                                   Year, Year.Code, Month, Month.Code, State, State.Code)
+  birthDataWoNa <- dplyr::summarise(birthDataWoNa, sum(Births))
+  
+  return (birthDataWoNa)
+}
+
+#####
+# FUNCTION: loadBirthData2 
+#
+#
+loadBirthData2 <- function()
+{
+  # Load the Natality data
+  birthFile <- "C:/Code/R/IS608-VizAnalytics/FinalProject/Data/Natality-2003-2006-YearMonthStateAge.txt"
+  birthData <- read.table(birthFile, 
+                          header=TRUE, 
+                          sep="\t", 
+                          fill=TRUE, 
+                          stringsAsFactors=FALSE,
+                          colClasses=c('character', # Notes
+                                       'character', # Year
+                                       'character', # Year.Code
+                                       'character', # Month
+                                       'character', # Month.Code
+                                       'character', # State
+                                       'character', # State.Code
+                                       'character', # Age of Mother
+                                       'character', # Age of Mother Code
+                                       'numeric'))  # Births
+  
+  #print(birthData[is.na(birthData$Births),])
+  birthDataWoNa <- subset(birthData, !is.na(birthData$Births), 
+                          select = - c(Notes, Age.of.Mother, Age.of.Mother.Code))  
+  birthDataWoNa <- dplyr::group_by(birthDataWoNa, 
+                                   Year, Year.Code, Month, Month.Code, State, State.Code)
+  birthDataWoNa <- dplyr::summarise(birthDataWoNa, sum(Births))
+  
   return (birthDataWoNa)
 }
 ```
@@ -127,8 +165,8 @@ loadUnemploymentData <- function()
   periods <- subset(periods, periods$period != "M13")
   print(periods)
   
-  # Only between 2007 and 2013
-  cleanerData <- subset(dataTable, 2007 <= dataTable$year &  dataTable$year <= 2013)
+  # Only between 2003 and 2013
+  cleanerData <- subset(dataTable, 2003 <= dataTable$year &  dataTable$year <= 2013)
   # Trim whitespace off the series_id
   cleanerData$series_id <- stringr::str_trim(cleanerData$series_id)
   # join state names and limit to only the unemployment data we care about.
@@ -144,6 +182,11 @@ loadUnemploymentData <- function()
 bd <-loadBirthData()
 head(bd)
 
+bd0306 <- loadBirthData2()
+head(bd0306)
+
+bd <- rbind(bd, bd0306)
+
 ud <- loadUnemploymentData()
 head(ud)
 ```
@@ -157,9 +200,9 @@ write.table(ud, dataFile,sep=",", row.names=FALSE)
 ```
 
 ```{r}
-colnames(bd) <- c("Notes",  "Year",  "Year Code",	
-                             "Month",	"Month Code",	"State",	
-                             "State Code",	"County",	"County Code",	"Births")
+colnames(bd) <- c("Year",  "Year.Code",	
+                             "Month",	"Month.Code",	"State",	
+                             "State Code", "Births") # "County",  "County Code",
 
 colnames(ud) <- c("series_id","Year","period","UnemploymentRate",
                   "footnote_codes","srd_code","blank",
@@ -168,9 +211,93 @@ colnames(ud) <- c("series_id","Year","period","UnemploymentRate",
 ubd <- plyr::join(ud, bd, by=c("Year", "Month", "State"), type="inner")
 head(ubd)
 
-dataFile <- sprintf("%s/LA-Natality-Combined.csv", path)
-write.table(ubd, dataFile,sep=",", row.names=FALSE)
+bSave <- FALSE
+if(bSave)
+{
+  dataFile <- sprintf("%s/LA-Natality-Combined.csv", path)
+  write.table(ubd, dataFile,sep=",", row.names=FALSE)  
+}
+```
 
+
+```{r}
+gitHubRoot <- "C:/Code/R/IS608-VizAnalytics/FinalProject/Data"
+#
+# FUNCTION: loadUnemploymentData 
+#
+loadNationalUnemploymentData <- function()
+{
+  # Load the Unemployment data
+  dataFile <- sprintf("%s/USUnemploymentRates2003-2013.csv", gitHubRoot)
+  data <- read.table(dataFile, 
+                     header=TRUE, 
+                     sep=",", 
+                     fill=TRUE, 
+                     stringsAsFactors=FALSE) 
+  
+  # Melt the data to a long format
+  data <- reshape2::melt(data, 
+               id.vars=c("Year"), 
+               variable.name="Month", 
+               value.name="UnemploymentRate")
+  
+  # Transform raw year/month columns into a Date column, sorted
+  data <- dplyr::mutate(data, 
+                 Date = lubridate::parse_date_time(sprintf("%s-%s-01", 
+                                                            Year, 
+                                                            Month), 
+                                                    orders="ybd"))
+  data <- data[order(data$Date), ]
+
+  return (data)
+}
+
+unempData <- loadNationalUnemploymentData()
+```
+
+```{r}
+
+# Transform raw year/month columns into a Date column
+ubd <- dplyr::mutate(ubd, 
+                        Date = lubridate::parse_date_time(sprintf("%s-%s-01", 
+                                                                  Year.Code, 
+                                                                  Month.Code), 
+                                                          orders="ymd"))
+
+birthsPerYearMth <- aggregate(Births ~  Date, ubd, sum)
+birthsPerYearMth <- birthsPerYearMth[order(birthsPerYearMth$Date), ]
+```
+
+```{r births_raw, echo=FALSE, fig.cap="U.S. Births 2003-2013", fig.path='figure/'}
+library(ggplot2)
+g1 <- ggplot(data=birthsPerYearMth, aes(x=Date))
+g1 <- g1 + geom_line(aes(y=Births, colour="Births"))
+g1 <- g1 + theme(axis.text.x = element_text(angle=30, vjust=1))
+g1 <- g1 + guides(colour = guide_legend("Legend"))
+g1 <- g1 + labs(title="United States Births 2003 - 2012",
+                x="Time",
+                y="Births")
+g1
+```
+
+```{r}
+modelRoot <- 3
+nth.root <- function(y, root)
+{
+  return (y ^ (1/root))
+}
+```
+
+```{r births_w_model, echo=FALSE, fig.cap="U.S. Births 2003-2012 with Linear Regression & UnemploymentRate & Model", fig.path='figure/'}
+
+g1 <- g1 + geom_point(data=unempData, aes(y=-5255729 + 
+                                  (-1723086 * UnemploymentRate) + 
+                                  (6049242 * nth.root(UnemploymentRate, modelRoot)) +
+                                  (454701 * UnemploymentRate * nth.root(UnemploymentRate, 
+                                                                                      modelRoot)), 
+                                colour="Model"))
+
+g1
 ```
 
 ### References
