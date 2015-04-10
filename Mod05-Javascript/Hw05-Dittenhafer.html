@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Dittenhafer - Hw05</title>
+        <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+
+        <!-- Optional theme -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+    </head>
+
+    <body>
+        <div class="container">
+            
+            <div id="datatable"></div>
+        </div>
+        <script>
+            var rows = []
+
+            d3.csv("https://raw.githubusercontent.com/jlaurito/CUNY_IS608/master/lecture5/js_examples/data/presidents.csv",
+                function (error, csv) {
+                    csv.forEach(function(row) {
+                        // Name
+                        
+                        // Height
+                        // Weight
+
+                        rows.push(row);
+                    })
+
+                    var table = d3.select("#datatable").append("table");
+                    table.classed("table table-striped", true); // table-striped');
+                    thead = table.append("thead");
+                    tbody = table.append("tbody");
+
+                    thead.append("th").text("Name");
+                    thead.append("th").text("Height");
+                    thead.append("th").text("Weight");
+                    //thead.append("th").text("");
+
+                    var tr = tbody.selectAll("tr")
+                          .data(rows)
+                          .enter().append("tr");
+
+                    var td = tr.selectAll("td")
+                          .data(function(d) { return [d.Name, d.Height, d.Weight]; })
+                        .enter().append("td")
+                          .text(function (d) { return d; });
+
+                    // Now add the chart column
+                    var width = 80,
+                          height = d3.select("table")[0][0].clientHeight,
+                          mx = 10,
+                          radius = 2;
+                    /*
+                    d3.select("#datatable tbody tr").append("td")
+                      .attr("id", "chart")
+                      .attr("width", width + "px")
+                      .attr("rowspan", rows.length);
+
+                    var chart = d3.select("#chart").append("svg")
+                        .attr("class", "chart")
+                        .attr("width", width)
+                        .attr("height", height);
+                    */
+                });
+
+        </script>
+
+    </body>
+</html>
