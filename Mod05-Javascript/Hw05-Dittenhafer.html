@@ -1,73 +1,141 @@
 <!DOCTYPE html>
 <html>
+    <!-- Using http://bl.ocks.org/llimllib/841dd138e429bb0545df as a template -->
     <head>
         <title>Dittenhafer - Hw05</title>
-        <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
 
         <!-- Latest compiled and minified CSS -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
 
         <!-- Optional theme -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+
+        <style>
+            #datatable {
+                margin-top: 25px;
+            }
+
+            #searchForm {
+                margin-top:25px;
+            }
+
+            #presidentSearch {
+                width: 250px;
+            }
+        </style>
     </head>
 
-    <body>
+    <body onload="loadPresidentsCsv()">
         <div class="container">
-            
-            <div id="datatable"></div>
+            <div class="row">
+                <div class="col-xs-offset-1 col-xs-3">
+                    <h5>IS608 - Module 5 Homework <br />
+                    Daniel Dittenhafer</h5>
+                </div>
+            </div>            
+            <div class="row">
+                <div class="col-xs-offset-1 col-xs-10">
+                    The following table lists the contents of the presidents.csv data file. Use the Search box to filter the table and find a president of interest.
+                </div>
+            </div>
+            <div class="row">
+                <form class="form-inline" id="searchForm">                
+                        <div class="col-xs-offset-3 col-xs-5">
+                            <div class="form-group">
+                                <label for="presidentSearch">Search</label>
+                                <input type="search" class="form-control" id="presidentSearch" placeholder="Enter President">
+                            </div>
+                        </div>                 
+                </form>                    
+            </div>
+            <div class="row">
+                <div class="col-xs-offset-1 col-xs-10">
+                    <div id="datatable"></div>
+                </div>
+            </div>
         </div>
+
+
+        <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
         <script>
             var rows = []
 
-            d3.csv("https://raw.githubusercontent.com/jlaurito/CUNY_IS608/master/lecture5/js_examples/data/presidents.csv",
-                function (error, csv) {
-                    csv.forEach(function(row) {
-                        // Name
-                        
-                        // Height
-                        // Weight
+            //
+            // Function: loadPresidentsCsv
+            //
+            // 
+            function loadPresidentsCsv() {
+                d3.csv("https://raw.githubusercontent.com/jlaurito/CUNY_IS608/master/lecture5/js_examples/data/presidents.csv",
+                    function (error, csv) {
+                        csv.forEach(function (row) {
+                            // Name
 
-                        rows.push(row);
-                    })
+                            // Height
+                            // Weight
 
-                    var table = d3.select("#datatable").append("table");
-                    table.classed("table table-striped", true); // table-striped');
-                    thead = table.append("thead");
-                    tbody = table.append("tbody");
+                            rows.push(row);
+                        })
 
-                    thead.append("th").text("Name");
-                    thead.append("th").text("Height");
-                    thead.append("th").text("Weight");
-                    //thead.append("th").text("");
+                        var table = d3.select("#datatable").append("table");
+                        table.classed("table table-striped", true);
+                        thead = table.append("thead");
+                        tbody = table.append("tbody");
 
-                    var tr = tbody.selectAll("tr")
-                          .data(rows)
-                          .enter().append("tr");
+                        thead.append("th").text("Name");
+                        thead.append("th").text("Height");
+                        thead.append("th").text("Weight");
+                        //thead.append("th").text("");
 
-                    var td = tr.selectAll("td")
-                          .data(function(d) { return [d.Name, d.Height, d.Weight]; })
-                        .enter().append("td")
-                          .text(function (d) { return d; });
+                        var tr = tbody.selectAll("tr")
+                              .data(rows)
+                              .enter().append("tr");
 
-                    // Now add the chart column
-                    var width = 80,
-                          height = d3.select("table")[0][0].clientHeight,
-                          mx = 10,
-                          radius = 2;
-                    /*
-                    d3.select("#datatable tbody tr").append("td")
-                      .attr("id", "chart")
-                      .attr("width", width + "px")
-                      .attr("rowspan", rows.length);
+                        var td = tr.selectAll("td")
+                              .data(function (d) { return [d.Name, d.Height, d.Weight]; })
+                            .enter().append("td")
+                              .text(function (d) { return d; });
 
-                    var chart = d3.select("#chart").append("svg")
-                        .attr("class", "chart")
-                        .attr("width", width)
-                        .attr("height", height);
-                    */
+                        // Now add the chart column
+                        var width = 80,
+                              height = d3.select("table")[0][0].clientHeight,
+                              mx = 10,
+                              radius = 2;
+                        /*
+                        d3.select("#datatable tbody tr").append("td")
+                          .attr("id", "chart")
+                          .attr("width", width + "px")
+                          .attr("rowspan", rows.length);
+    
+                        var chart = d3.select("#chart").append("svg")
+                            .attr("class", "chart")
+                            .attr("width", width)
+                            .attr("height", height);
+                        */
+                    });
+
+                d3.select("#presidentSearch").on("keyup", searchPresidents);
+            }
+
+            //
+            // Function: searchPresidents
+            //
+            // 
+            function searchPresidents() {
+                var inputField = d3.select("#presidentSearch");
+                var srchText = inputField.property("value");
+                var tableRows = d3.select("#datatable").select("tbody").selectAll("tr");
+
+                tableRows[0].forEach(function (row) {
+                    var td = row.cells[0]
+                    if (td.innerText.search(srchText) > -1) {
+                        // Found
+                        d3.select(row).classed("hidden", false)
+                    }
+                    else {
+                        d3.select(row).classed("hidden", true)
+                    }
                 });
-
+            }
         </script>
-
     </body>
 </html>
