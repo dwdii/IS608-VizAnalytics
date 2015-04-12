@@ -10,6 +10,8 @@
         <!-- Optional theme -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
 
+        <!--link rel="stylesheet" href="https://cdn.rawgit.com/novus/nvd3/v1.7.1/build/nv.d3.css" -->
+
         <style>
             #datatable {
                 margin-top: 25px;
@@ -21,6 +23,17 @@
 
             #presidentSearch {
                 width: 250px;
+            }
+            #heightChart {
+              padding: 0px;
+            }
+
+            #weightChart {
+                padding: 0px;
+            }
+
+            .xaxislabel {
+              font-size: 9px;
             }
         </style>
     </head>
@@ -35,7 +48,9 @@
             </div>            
             <div class="row">
                 <div class="col-xs-offset-1 col-xs-10">
-                    The following table lists the contents of the presidents.csv data file. Use the Search box to filter the table and find a president of interest.
+                    The following table lists the contents of the presidents.csv data file. 
+                    Use the Search box to filter the table and find a president of interest.
+                    The search is case sensitive.
                 </div>
             </div>
             <div class="row">
@@ -53,12 +68,20 @@
                     <div id="datatable"></div>
                 </div>
             </div>
+           <div class="row">
+                <div class="col-xs-offset-1 col-xs-10">
+                    <div id="nv3dChart"><svg></svg></div>
+                </div>
+            </div>
         </div>
 
 
         <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+        <!--script src="https://cdn.rawgit.com/novus/nvd3/v1.7.1/build/nv.d3.min.js"></script-->
         <script>
             var rows = []
+            var _tableHeight = 0
+            var _names;
 
             //
             // Function: loadPresidentsCsv
@@ -68,11 +91,6 @@
                 d3.csv("https://raw.githubusercontent.com/jlaurito/CUNY_IS608/master/lecture5/js_examples/data/presidents.csv",
                     function (error, csv) {
                         csv.forEach(function (row) {
-                            // Name
-
-                            // Height
-                            // Weight
-
                             rows.push(row);
                         })
 
@@ -83,8 +101,10 @@
 
                         thead.append("th").text("Name");
                         thead.append("th").text("Height");
+                        thead.append("th").text("Visual").attr("class", "chartHdr");
                         thead.append("th").text("Weight");
-                        //thead.append("th").text("");
+                        thead.append("th").text("Visual").attr("class", "chartHdr");
+                        //thead.append("th").text("Weight Chart").attr("class", "chartHdr");
 
                         var tr = tbody.selectAll("tr")
                               .data(rows)
@@ -95,25 +115,152 @@
                             .enter().append("td")
                               .text(function (d) { return d; });
 
-                        // Now add the chart column
-                        var width = 80,
-                              height = d3.select("table")[0][0].clientHeight,
-                              mx = 10,
-                              radius = 2;
-                        /*
-                        d3.select("#datatable tbody tr").append("td")
-                          .attr("id", "chart")
-                          .attr("width", width + "px")
-                          .attr("rowspan", rows.length);
-    
-                        var chart = d3.select("#chart").append("svg")
-                            .attr("class", "chart")
-                            .attr("width", width)
-                            .attr("height", height);
-                        */
+                        _tableHeight = d3.select("#datatable")[0][0].clientHeight
+                        _names = rows.map(function (t) { return t.Name; });
+
+
+                        addVerticalLineChart(getH, "td:nth-child(3)", "heightChart")
+
+                        addVerticalLineChart(getW, null, "weightChart")
+
+                        
                     });
 
                 d3.select("#presidentSearch").on("keyup", searchPresidents);
+
+                
+            }
+
+            //
+            // Function: addVerticalLineChart
+            //
+            //
+            function addVerticalLineChart(g, location, id) {
+                // Now add the chart column
+                var width = 80,
+                      height = _tableHeight,
+                      mx = 10,
+                      radius = 2;
+
+                firstDataRow = d3.select("#datatable tbody tr");
+
+                cell = firstDataRow.insert("td", location);
+
+                cell.attr("id", id)
+                  .attr("width", width + "px")
+                  .attr("rowspan", rows.length);
+
+                var chart = d3.select("#" + id).append("svg")
+                    .attr("class", "chart")
+                    .attr("width", width)
+                    .attr("height", height);
+
+                // Determine min/max across both series
+                var maxH = 0;
+                var minH = Number.MAX_VALUE;
+                for (i = 0; i < rows.length; i++) {
+                    var h = parseInt(g(rows[i]))
+
+                    if (h > maxH) { maxH = h; }
+                    if (h < minH) { minH = h; }
+                }
+
+                // Axis Configuration
+                scales = setupAxis(chart, _names, minH, maxH, height, width, mx);
+                xscale = scales.xscale;
+                yscale = scales.yscale;
+
+                chart.selectAll(".xaxistick")
+                    .data(xscale.ticks(2))
+                  .enter().append("line")
+                    .attr("x1", function (d) { return xscale(d); })
+                    .attr("x2", function (d) { return xscale(d); })
+                    .attr("y1", 10)
+                    .attr("y2", height)
+                    .attr("stroke", "#eee")
+                    .attr("stroke-width", 1);
+
+                // Height Series
+                chart.selectAll(".line")
+                    .data(rows)
+                  .enter().append("line")
+                    .attr("x1", function (d) { return xscale(g(d)); })
+                    .attr("y1", function (d) { return yscale(d.Name) + yscale.rangeBand() / 2; })
+                    .attr("x2", function (d, i) { return rows[i + 1] ? xscale(g(rows[i + 1])) : xscale(g(d)); })
+                    .attr("y2", function (d, i) { return rows[i + 1] ? yscale(rows[i + 1].Name) + yscale.rangeBand() / 2 : yscale(d.Name) + yscale.rangeBand() / 2; })
+                    .attr("stroke", "#777")
+                    .attr("stroke-width", 1);
+
+                var pt = chart.selectAll(".pt")
+                    .data(rows)
+                  .enter().append("g")
+                    .attr("class", "pt")
+                    .attr("transform", function (d) { return "translate(" + xscale(g(d)) + "," + (yscale(d.Name) + yscale.rangeBand() / 2) + ")"; });
+
+                pt.append("circle")
+                    .attr("cx", 0)
+                    .attr("cy", 0)
+                    .attr("r", radius)
+                    .attr("opacity", .5)
+                    .attr("fill", "#ff0000");
+            }
+
+            //
+            // Function: getH
+            //
+            //
+            function getH(row) {
+                return row.Height;
+            }
+
+            //
+            // Function: getH
+            //
+            //
+            function getW(row) {
+                return row.Weight;
+            }
+
+            //
+            // Function: setupAxis
+            //
+            //
+            function setupAxis(chart, domainIds, min, max, height, width, mx) {
+
+                var scales = new Object();
+
+                var xscale = d3.scale.linear()
+                                  .domain([min, max])
+                                  .range([mx, width - mx])
+                                  .nice();
+
+                var yscale = d3.scale.ordinal()
+                  .domain(domainIds)
+                  .rangeBands([0, height]);
+
+                chart.selectAll(".xaxislabel")
+                    .data(xscale.ticks(2))
+                  .enter().append("text")
+                    .attr("class", "xaxislabel")
+                    .attr("x", function (d) { return xscale(d); })
+                    .attr("y", 10)
+                    .attr("text-anchor", "middle")
+                    .text(String)
+
+                chart.selectAll(".xaxistick")
+                    .data(xscale.ticks(2))
+                  .enter().append("line")
+                    .attr("x1", function (d) { return xscale(d); })
+                    .attr("x2", function (d) { return xscale(d); })
+                    .attr("y1", 10)
+                    .attr("y2", height)
+                    .attr("stroke", "#eee")
+                    .attr("stroke-width", 1);
+
+                scales.xscale = xscale;
+                scales.yscale = yscale;
+
+                return scales;
             }
 
             //
@@ -125,6 +272,7 @@
                 var srchText = inputField.property("value");
                 var tableRows = d3.select("#datatable").select("tbody").selectAll("tr");
 
+                // Filter the table rows based on president's name
                 tableRows[0].forEach(function (row) {
                     var td = row.cells[0]
                     if (td.innerText.search(srchText) > -1) {
@@ -134,6 +282,40 @@
                     else {
                         d3.select(row).classed("hidden", true)
                     }
+                });
+
+                // Need to hide the charts since they are a rowspaning single cell. 
+                // Would be alot more work to update this dynamically.
+                var hideCharts = srchText.length > 0;
+                d3.selectAll(".chartHdr").classed("hidden", hideCharts);
+                d3.select("#heightChart").classed("hidden", hideCharts);
+                d3.select("#weightChart").classed("hidden", hideCharts);
+            }
+
+            function nv3dChartAttempt()
+            {
+                // NV3D
+                nv.addGraph(function () {
+                    var chart = nv.models.discreteBarChart()
+                        .x(function (d) { return d.Name })    //Specify the data accessors.
+                        .y(function (d) { return d.Height })
+                        .staggerLabels(true)    //Too many bars and not enough room? Try staggering labels.
+                        .tooltips(false)        //Don't show tooltips
+                        .showValues(true)       //...instead, show the bar value right on top of each bar.
+                    //  .transitionDuration(350)
+                    ;
+
+                    n3data = new Object();
+                    n3data.key = "presidents";
+                    n3data.values = rows;
+
+                    d3.select('#nv3dChart svg')
+                        .datum(n3data)
+                        .call(chart);
+
+                    nv.utils.windowResize(chart.update);
+
+                    return chart;
                 });
             }
         </script>
