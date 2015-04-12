@@ -11,7 +11,7 @@ WONDER Online Database, for years 2007-2013 available January 2015. Accessed at 
 ### Natality, 2003-2006-YearMonthStateAge.txt
 United States Department of Health and Human Services (US DHHS), Centers for Disease Control and Prevention
 (CDC), National Center for Health Statistics (NCHS), Division of Vital Statistics, Natality public-use data on CDC
-WONDER Online Database, for years 2003-2006 available March 2009. Accessed at http://wonder.cdc.gov/natality-current.html on April 6, 2015 8:51 PM
+WONDER Online Database, for years 2003-2006 available March 2009. Accessed at http://wonder.cdc.gov/natality-v2006.html on April 6, 2015 8:51 PM
 
 ### la.data.3.AllStatesS.txt (Seasonally Adjusted)
 ### la.period.txt	
