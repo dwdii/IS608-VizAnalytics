@@ -195,8 +195,12 @@ The following code snippet saves the massaged local area unemployment data to a 
 
 ```{r}
 path <- "C:/Code/R/IS608-VizAnalytics/FinalProject/Data"
-dataFile <- sprintf("%s/LA-States-2007-2013.csv", path)
-write.table(ud, dataFile,sep=",", row.names=FALSE)
+dataFile <- sprintf("%s/LA-States-2003-2013.csv", path)
+bSaveUnempData <- FALSE
+if(bSaveUnempData)
+{
+  write.table(ud, dataFile,sep=",", row.names=FALSE)
+}
 ```
 
 ```{r}
@@ -223,7 +227,7 @@ if(bSave)
 ```{r}
 gitHubRoot <- "C:/Code/R/IS608-VizAnalytics/FinalProject/Data"
 #
-# FUNCTION: loadUnemploymentData 
+# FUNCTION: loadNationalUnemploymentData 
 #
 loadNationalUnemploymentData <- function()
 {
@@ -274,7 +278,7 @@ g1 <- ggplot(data=birthsPerYearMth, aes(x=Date))
 g1 <- g1 + geom_line(aes(y=Births, colour="Births"))
 g1 <- g1 + theme(axis.text.x = element_text(angle=30, vjust=1))
 g1 <- g1 + guides(colour = guide_legend("Legend"))
-g1 <- g1 + labs(title="United States Births 2003 - 2012",
+g1 <- g1 + labs(title="United States Births 2003 - 2013",
                 x="Time",
                 y="Births")
 g1
@@ -288,14 +292,16 @@ nth.root <- function(y, root)
 }
 ```
 
-```{r births_w_model, echo=FALSE, fig.cap="U.S. Births 2003-2012 with Linear Regression & UnemploymentRate & Model", fig.path='figure/'}
+```{r births_w_model, echo=FALSE, fig.cap="U.S. Births 2003-2013 with Model", fig.path='figure/'}
 
 g1 <- g1 + geom_point(data=unempData, aes(y=-5255729 + 
                                   (-1723086 * UnemploymentRate) + 
                                   (6049242 * nth.root(UnemploymentRate, modelRoot)) +
                                   (454701 * UnemploymentRate * nth.root(UnemploymentRate, 
                                                                                       modelRoot)), 
-                                colour="Model"))
+                                colour="Model")) +
+      geom_smooth(aes(y=Births))
+
 
 g1
 ```
