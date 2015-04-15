@@ -12,6 +12,9 @@
 
         <!--link rel="stylesheet" href="https://cdn.rawgit.com/novus/nvd3/v1.7.1/build/nv.d3.css" -->
 
+        <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+        <script src="https://cdn.rawgit.com/novus/nvd3/v1.7.1/build/nv.d3.min.js"></script>
+
         <style>
             #datatable {
                 margin-top: 25px;
@@ -76,8 +79,7 @@
         </div>
 
 
-        <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-        <!--script src="https://cdn.rawgit.com/novus/nvd3/v1.7.1/build/nv.d3.min.js"></script-->
+
         <script>
             var rows = []
             var _tableHeight = 0
@@ -119,9 +121,11 @@
                         _names = rows.map(function (t) { return t.Name; });
 
 
-                        addVerticalLineChart(getH, "td:nth-child(3)", "heightChart")
+                        addVerticalLineChart(getH, "td:nth-child(3)", "heightChart");
 
-                        addVerticalLineChart(getW, null, "weightChart")
+                        addVerticalLineChart(getW, null, "weightChart");
+
+                        nv3dChartAttempt();
 
                         
                     });
@@ -292,6 +296,7 @@
                 d3.select("#weightChart").classed("hidden", hideCharts);
             }
 
+            var _myData;
             function nv3dChartAttempt()
             {
                 // NV3D
@@ -302,15 +307,16 @@
                         .staggerLabels(true)    //Too many bars and not enough room? Try staggering labels.
                         .tooltips(false)        //Don't show tooltips
                         .showValues(true)       //...instead, show the bar value right on top of each bar.
-                    //  .transitionDuration(350)
+                        
                     ;
 
-                    n3data = new Object();
-                    n3data.key = "presidents";
-                    n3data.values = rows;
+                    _myData = new Array();
+                    _myData[0] = new Object()
+                    _myData[0].key = "presidents";
+                    _myData[0].values = rows;
 
                     d3.select('#nv3dChart svg')
-                        .datum(n3data)
+                        .datum(_myData)
                         .call(chart);
 
                     nv.utils.windowResize(chart.update);
