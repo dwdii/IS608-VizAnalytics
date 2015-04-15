@@ -23,3 +23,8 @@ Accessed at http://download.bls.gov/pub/time.series/la/  on Mar 30, 2015 9:21 PM
 ### USUnemploymentRates2003-2013.csv
 United States Department of Labor, Bureau of Labor Statistics. Labor Force Statistics from the Current Population Survey
 Accessed at http://data.bls.gov/timeseries/LNS14000000 on April 6, 2015 10:55 PM
+
+### CO-EST2014-alldata.csv
+United States Department of Commerce, Census Bureau.
+Accessed at http://www.census.gov/popest/data/counties/totals/2014/CO-EST2014-alldata.html
+on April 14, 2015

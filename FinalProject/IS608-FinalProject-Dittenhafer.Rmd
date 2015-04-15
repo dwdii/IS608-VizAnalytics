@@ -39,6 +39,12 @@ bibLaborData <- bibentry(bibtype="Misc",
 ```
 
 ```{r}
+require.package("plyr")
+require.package("dplyr")
+
+```
+
+```{r}
 #####
 # FUNCTION: loadBirthData 
 #
@@ -105,6 +111,31 @@ loadBirthData2 <- function()
   birthDataWoNa <- dplyr::summarise(birthDataWoNa, sum(Births))
   
   return (birthDataWoNa)
+}
+
+#####
+# FUNCTION: loadCensusData 
+#
+#
+loadCensusData <- function()
+{
+  # Load the Natality data
+  dataFile <- "C:/Code/R/IS608-VizAnalytics/FinalProject/Data/CO-EST2014-Alldata.csv"
+  data <- read.table(dataFile, 
+                          header=TRUE, 
+                          sep=",", 
+                          quote="",
+                          fill=TRUE, 
+                          stringsAsFactors=FALSE,
+                          colClasses=c('character')) 
+  
+  data <- mutate(data, County.Code=paste(STATE, COUNTY, sep=""))
+  data <- mutate(data, CENSUS2010POPThousands=as.numeric(CENSUS2010POP) / 1000)
+  data <- mutate(data, CENSUS2010POPHundreds=as.numeric(CENSUS2010POP) / 100)
+  
+  #print(summary(data))
+  
+  return (data)
 }
 ```
 
@@ -304,6 +335,48 @@ g1 <- g1 + geom_point(data=unempData, aes(y=-5255729 +
 
 
 g1
+```
+
+```{r}
+doBirthRateCombine <- TRUE
+if(doBirthRateCombine)
+{
+  censusData <- loadCensusData()
+
+  #  Pull out just what we need of the census data
+  censusCtyPop2010 <- subset(censusData, 
+                             censusData$COUNTY == "000", # State Rollup Pop
+                             select=c("STNAME", 
+                                      "CENSUS2010POP", 
+                                      "CENSUS2010POPHundreds", 
+                                      "CENSUS2010POPThousands"))  
+  colnames(censusCtyPop2010) <- c("State", 
+                                      "CENSUS2010POP", 
+                                      "CENSUS2010POPHundreds", 
+                                      "CENSUS2010POPThousands")
+
+  #  Normalize to births per 1000 population
+  #print(head(censusCtyPop2010))
+  udbc <- join(ubd, censusCtyPop2010, by="State")
+  udbc <- mutate(udbc, BirthsPer100Pop=Births / CENSUS2010POPHundreds)  
+  udbc <- mutate(udbc, BirthsPer1000Pop=Births / CENSUS2010POPThousands)
+  
+  print(head(udbc))
+  
+  bSave <- TRUE
+  if(bSave)
+  {
+    udbcLimited <- subset(udbc, 
+                             select=c("State",
+                                      "Year.Code","Month.Code",
+                                      "Births",
+                                      "BirthsPer1000Pop",
+                                      "UnemploymentRate")) 
+    
+    dataFile <- sprintf("%s/LA-Natality-Census-Combined.csv", path)
+    write.table(udbcLimited, dataFile,sep=",", row.names=FALSE)  
+  }  
+}
 ```
 
 ### References
