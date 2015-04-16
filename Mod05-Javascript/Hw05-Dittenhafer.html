@@ -38,6 +38,12 @@
             .xaxislabel {
               font-size: 9px;
             }
+
+            #nv3dChart {
+                margin-top: 25px;
+                margin-bottom: 25px;
+                height: 200px;
+            }
         </style>
     </head>
 
@@ -48,7 +54,7 @@
                     <h5>IS608 - Module 5 Homework <br />
                     Daniel Dittenhafer</h5>
                 </div>
-            </div>            
+            </div> 
             <div class="row">
                 <div class="col-xs-offset-1 col-xs-10">
                     The following table lists the contents of the presidents.csv data file. 
@@ -71,6 +77,11 @@
                     <div id="datatable"></div>
                 </div>
             </div>
+            <div class="row">
+                <div class="col-xs-offset-1 col-xs-10">
+                    The following column chart is produced using the NVD3 discreteBarChart model. 
+                </div>
+            </div>
            <div class="row">
                 <div class="col-xs-offset-1 col-xs-10">
                     <div id="nv3dChart"><svg></svg></div>
@@ -78,22 +89,20 @@
             </div>
         </div>
 
-
-
         <script>
-            var rows = []
+            var _rows = []
             var _tableHeight = 0
             var _names;
 
             //
             // Function: loadPresidentsCsv
             //
-            // 
+            //  
             function loadPresidentsCsv() {
                 d3.csv("https://raw.githubusercontent.com/jlaurito/CUNY_IS608/master/lecture5/js_examples/data/presidents.csv",
                     function (error, csv) {
                         csv.forEach(function (row) {
-                            rows.push(row);
+                            _rows.push(row);
                         })
 
                         var table = d3.select("#datatable").append("table");
@@ -109,7 +118,7 @@
                         //thead.append("th").text("Weight Chart").attr("class", "chartHdr");
 
                         var tr = tbody.selectAll("tr")
-                              .data(rows)
+                              .data(_rows)
                               .enter().append("tr");
 
                         var td = tr.selectAll("td")
@@ -118,12 +127,12 @@
                               .text(function (d) { return d; });
 
                         _tableHeight = d3.select("#datatable")[0][0].clientHeight
-                        _names = rows.map(function (t) { return t.Name; });
+                        _names = _rows.map(function (t) { return t.Name; });
 
 
-                        addVerticalLineChart(getH, "td:nth-child(3)", "heightChart");
+                        addVerticalLineChart(getH, "td:nth-child(3)", "heightChart", _rows);
 
-                        addVerticalLineChart(getW, null, "weightChart");
+                        addVerticalLineChart(getW, null, "weightChart", _rows);
 
                         nv3dChartAttempt();
 
@@ -138,8 +147,18 @@
             //
             // Function: addVerticalLineChart
             //
+            // Description: Generalized function to add a veritical line chart to a table.
             //
-            function addVerticalLineChart(g, location, id) {
+            // Params:
+            //       
+            //           g - a function to return the y value for the line chart for a given row
+            //
+            //    location - the CSS compatible selector string for the column before
+            //               which the line chart should be inserted.
+            //
+            //          id - the identifier to be assigned to the wrapping table cell.
+            //
+            function addVerticalLineChart(g, location, id, dataRows) {
                 // Now add the chart column
                 var width = 80,
                       height = _tableHeight,
@@ -152,7 +171,7 @@
 
                 cell.attr("id", id)
                   .attr("width", width + "px")
-                  .attr("rowspan", rows.length);
+                  .attr("rowspan", dataRows.length);
 
                 var chart = d3.select("#" + id).append("svg")
                     .attr("class", "chart")
@@ -162,8 +181,8 @@
                 // Determine min/max across both series
                 var maxH = 0;
                 var minH = Number.MAX_VALUE;
-                for (i = 0; i < rows.length; i++) {
-                    var h = parseInt(g(rows[i]))
+                for (i = 0; i < dataRows.length; i++) {
+                    var h = parseInt(g(dataRows[i]))
 
                     if (h > maxH) { maxH = h; }
                     if (h < minH) { minH = h; }
@@ -186,17 +205,17 @@
 
                 // Height Series
                 chart.selectAll(".line")
-                    .data(rows)
+                    .data(dataRows)
                   .enter().append("line")
                     .attr("x1", function (d) { return xscale(g(d)); })
                     .attr("y1", function (d) { return yscale(d.Name) + yscale.rangeBand() / 2; })
-                    .attr("x2", function (d, i) { return rows[i + 1] ? xscale(g(rows[i + 1])) : xscale(g(d)); })
-                    .attr("y2", function (d, i) { return rows[i + 1] ? yscale(rows[i + 1].Name) + yscale.rangeBand() / 2 : yscale(d.Name) + yscale.rangeBand() / 2; })
+                    .attr("x2", function (d, i) { return dataRows[i + 1] ? xscale(g(dataRows[i + 1])) : xscale(g(d)); })
+                    .attr("y2", function (d, i) { return dataRows[i + 1] ? yscale(dataRows[i + 1].Name) + yscale.rangeBand() / 2 : yscale(d.Name) + yscale.rangeBand() / 2; })
                     .attr("stroke", "#777")
                     .attr("stroke-width", 1);
 
                 var pt = chart.selectAll(".pt")
-                    .data(rows)
+                    .data(dataRows)
                   .enter().append("g")
                     .attr("class", "pt")
                     .attr("transform", function (d) { return "translate(" + xscale(g(d)) + "," + (yscale(d.Name) + yscale.rangeBand() / 2) + ")"; });
@@ -212,6 +231,7 @@
             //
             // Function: getH
             //
+            // Description: Helper function to return the height value for a row of data.
             //
             function getH(row) {
                 return row.Height;
@@ -220,7 +240,8 @@
             //
             // Function: getH
             //
-            //
+            // Description: Helper function to return the weight value for a row of data.
+s            //
             function getW(row) {
                 return row.Weight;
             }
@@ -228,6 +249,8 @@
             //
             // Function: setupAxis
             //
+            // Description: Generalized function to configure the axes 
+            //              for the veritical D3 table line charts.
             //
             function setupAxis(chart, domainIds, min, max, height, width, mx) {
 
@@ -270,6 +293,7 @@
             //
             // Function: searchPresidents
             //
+            // Description: Performs the search/filtering from the input field.
             // 
             function searchPresidents() {
                 var inputField = d3.select("#presidentSearch");
@@ -297,32 +321,58 @@
             }
 
             var _myData;
+            var _nvd3Chart;
+            //
+            // Function: nv3dChartAttempt
+            //
+            // Description: This function will create a new NV3D discreteBarChart
+            //              to visualize the president's heights.
+            //
             function nv3dChartAttempt()
             {
                 // NV3D
                 nv.addGraph(function () {
-                    var chart = nv.models.discreteBarChart()
+                    _nvd3Chart = nv.models.discreteBarChart()
                         .x(function (d) { return d.Name })    //Specify the data accessors.
                         .y(function (d) { return d.Height })
-                        .staggerLabels(true)    //Too many bars and not enough room? Try staggering labels.
-                        .tooltips(false)        //Don't show tooltips
-                        .showValues(true)       //...instead, show the bar value right on top of each bar.
-                        
+                        .staggerLabels(false)    //Too many bars and not enough room? Try staggering labels... 
+                                                 // but this isn't compatible with rotated labels.
+                        .tooltips(false)         //Don't show tooltips
                     ;
+                    _nvd3Chart.xAxis.rotateLabels(-35);
 
                     _myData = new Array();
                     _myData[0] = new Object()
                     _myData[0].key = "presidents";
-                    _myData[0].values = rows;
+                    _myData[0].values = _rows;
 
                     d3.select('#nv3dChart svg')
                         .datum(_myData)
-                        .call(chart);
+                        .call(_nvd3Chart);
 
-                    nv.utils.windowResize(chart.update);
+                    d3.select('#nv3dChart svg')
+                          .append("text")
+                          .attr("x", 100 + _nvd3Chart.container.clientWidth / 3)//)
+                          .attr("y", 10)
+                          .attr("text-anchor", "middle").attr("id", "nv3dChartTitle")
+                          .text("President's Heights");
 
-                    return chart;
+                    nv.utils.windowResize(_nvd3Chart.update);
+                    nv.utils.windowResize(Nvd3ChartTitleUpdate);
+
+                    return _nvd3Chart;
                 });
+            }
+
+            //
+            // Function: Nvd3ChartTitleUpdate
+            //
+            // Description: This function will relocate the chart title so it stays centered above the chart
+            //
+            function Nvd3ChartTitleUpdate() {
+                d3.select('#nv3dChartTitle')
+                    .attr("x", 100 + _nvd3Chart.container.clientWidth / 3)
+                    .attr("y", 10)
             }
         </script>
     </body>
