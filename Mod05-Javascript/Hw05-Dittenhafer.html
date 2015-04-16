@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-    <!-- Using http://bl.ocks.org/llimllib/841dd138e429bb0545df as a template -->
     <head>
         <title>Dittenhafer - Hw05</title>
 
@@ -12,8 +11,8 @@
 
         <!--link rel="stylesheet" href="https://cdn.rawgit.com/novus/nvd3/v1.7.1/build/nv.d3.css" -->
 
-        <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-        <script src="https://cdn.rawgit.com/novus/nvd3/v1.7.1/build/nv.d3.min.js"></script>
+        <script type="text/javascript" src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+        <script type="text/javascript" src="https://cdn.rawgit.com/novus/nvd3/v1.7.1/build/nv.d3.min.js"></script>
 
         <style>
             #datatable {
@@ -89,7 +88,7 @@
             </div>
         </div>
 
-        <script>
+        <script type="text/javascript">
             var _rows = []
             var _tableHeight = 0
             var _names;
@@ -97,6 +96,7 @@
             //
             // Function: loadPresidentsCsv
             //
+            // Adapted from: http://bl.ocks.org/llimllib/841dd138e429bb0545df
             //  
             function loadPresidentsCsv() {
                 d3.csv("https://raw.githubusercontent.com/jlaurito/CUNY_IS608/master/lecture5/js_examples/data/presidents.csv",
@@ -115,7 +115,6 @@
                         thead.append("th").text("Visual").attr("class", "chartHdr");
                         thead.append("th").text("Weight");
                         thead.append("th").text("Visual").attr("class", "chartHdr");
-                        //thead.append("th").text("Weight Chart").attr("class", "chartHdr");
 
                         var tr = tbody.selectAll("tr")
                               .data(_rows)
@@ -135,8 +134,7 @@
                         addVerticalLineChart(getW, null, "weightChart", _rows);
 
                         nv3dChartAttempt();
-
-                        
+                                                
                     });
 
                 d3.select("#presidentSearch").on("keyup", searchPresidents);
