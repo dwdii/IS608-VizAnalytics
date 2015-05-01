@@ -325,7 +325,7 @@ nth.root <- function(y, root)
 
 ```{r births_w_model, echo=FALSE, fig.cap="U.S. Births 2003-2013 with Model", fig.path='figure/'}
 
-g1 <- g1 + geom_point(data=unempData, aes(y=-5255729 + 
+g11 <- g1 + geom_point(data=unempData, aes(y=-5255729 + 
                                   (-1723086 * UnemploymentRate) + 
                                   (6049242 * nth.root(UnemploymentRate, modelRoot)) +
                                   (454701 * UnemploymentRate * nth.root(UnemploymentRate, 
@@ -334,8 +334,9 @@ g1 <- g1 + geom_point(data=unempData, aes(y=-5255729 +
       geom_smooth(aes(y=Births))
 
 
-g1
+g11
 ```
+
 
 ```{r}
 doBirthRateCombine <- TRUE
@@ -363,7 +364,7 @@ if(doBirthRateCombine)
   
   print(head(udbc))
   
-  bSave <- TRUE
+  bSave <- FALSE
   if(bSave)
   {
     udbcLimited <- subset(udbc, 
@@ -377,6 +378,25 @@ if(doBirthRateCombine)
     write.table(udbcLimited, dataFile,sep=",", row.names=FALSE)  
   }  
 }
+```
+
+```{r annual_births, fig.path='figure/'}
+
+yrTotals <- aggregate(Births~ Year, udbc, FUN=sum )
+print(yrTotals)
+
+gT <- ggplot(yrTotals, aes(x=Year)) + geom_line(aes(y=Births)) +
+      labs(title="United States Births 2003 - 2013 Annually",
+                x="Time",
+                y="Births") +
+  theme(axis.ticks=element_blank(),
+                 axis.text.x=element_text(angle=60,hjust=1),
+                 panel.border = element_rect(color="gray", fill=NA),
+                 panel.background=element_rect(fill="#FBFBFB"),
+                 panel.grid.major.y=element_line(color="white", size=0.5),
+                 panel.grid.major.x=element_line(color="white", size=0.5))
+gT
+
 ```
 
 ### References
