@@ -99,7 +99,7 @@
             // Adapted from: http://bl.ocks.org/llimllib/841dd138e429bb0545df
             //  
             function loadPresidentsCsv() {
-                d3.csv("https://raw.githubusercontent.com/jlaurito/CUNY_IS608/master/lecture5/js_examples/data/presidents.csv",
+                d3.csv("presidents.csv",
                     function (error, csv) {
                         csv.forEach(function (row) {
                             _rows.push(row);
@@ -239,7 +239,7 @@
             // Function: getH
             //
             // Description: Helper function to return the weight value for a row of data.
-s            //
+            //
             function getW(row) {
                 return row.Weight;
             }
