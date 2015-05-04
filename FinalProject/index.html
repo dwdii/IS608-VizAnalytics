@@ -24,6 +24,10 @@
             top: 70px;
             left: 10px;
         }
+
+        h2 {
+            padding-top:20px;
+        }
     </style>
 
     
@@ -54,7 +58,7 @@
     <div class="container" style="margin-top:50px">
         <div class="row">
             <div id="Project"  />
-            <h2>U.S. Natality &amp; Unemployment Rate By State</h2>
+            <h2>U.S. Natality &amp; Unemployment Rate By State, Age of Mother</h2>
             <h3>Preface</h3>
             <p>This project was undertaken as part of the Knowledge &amp; Visual Analytics (IS608) course requirements for the <a href="http://sps.cuny.edu/programs/ms_dataanalytics">Master of Science, Data Analytics</a> program at <a href="http://www.cuny.edu/index.html">City University of New York (CUNY)</a>.</p>
 
@@ -94,12 +98,17 @@
         </div>
         <div id="chart_div"></div>
 
-        <!--Div that will hold the motion chart-->
-        <h2>Motion Chart</h2>
-        <!--a id="MotionChart"></!--a-->
-        <div id="MotionChart"></div>
+        <!--Div that will hold the State motion chart-->
+        <h2 id="StateChart">State Chart</h2>
+        <div id="StateChartDiv"></div>
         <br />
 
+        <!--Div that will hold the Age motion chart-->
+        <h2 id="AgeChart">Age Chart</h2>
+        <div id="AgeChartDiv"></div>
+        <br />
+
+        <a href="https://developers.google.com/chart/interactive/docs/gallery/motionchart">Google Motion Chart</a>
         <div id="table_div"></div>
     </div><!-- /.container -->
 
@@ -107,7 +116,8 @@
     <div id="mysidenav">
       <ul class="nav nav-pills nav-stacked">
           <li><a href="#Project">Project</a></li>
-          <li><a href="#MotionChart">Motion Chart</a></li>
+          <li><a href="#StateChart">State Chart</a></li>
+          <li><a href="#AgeChart">Age Chart</a></li>
       </ul>
     </div>
 
@@ -129,29 +139,37 @@
         google.load("visualization", "1", { packages: ["motionchart"] });
 
         // Set a callback to run when the Google Visualization API is loaded.
-        google.setOnLoadCallback(drawChart);
+        google.setOnLoadCallback(drawCharts);
 
-        function drawChart() {
-            var jsonData = $.ajax({
-                url: "./Natality2003-2013-StateYearMonthUnemp.json",
+        function loadChart(dataFile, id, state) {
+
+            var jsonStateData = $.ajax({
+                url: dataFile,
                 dataType: "json",
                 async: false
             }).responseText;
 
             // Create our data table out of JSON data loaded from server.
-            var data = new google.visualization.DataTable(jsonData);
-
-            // Instantiate and draw our chart, passing in some options.
-            //var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
-            //chart.draw(data, { width: 400, height: 240 });
+            var stateData = new google.visualization.DataTable(jsonStateData);
 
             var options = {};
-            options['state'] = '{ "colorOption": "2", "yZoomedDataMax": 51747, "iconType": "BUBBLE", "orderedByY": false, "xAxisOption": "2", "yZoomedDataMin": 420, "dimensions": { "iconDimensions": ["dim0"] }, "xZoomedDataMax": 14.9, "xZoomedIn": false, "yAxisOption": "3", "nonSelectedAlpha": 0.4, "duration": { "multiplier": 1, "timeUnit": "D" }, "yLambda": 1, "orderedByX": false, "uniColorForNonSelected": false, "xZoomedDataMin": 2.3, "iconKeySettings": [{ "key": { "dim0": "New York" } }], "playDuration": 15000, "time": "2003", "showTrails": false, "sizeOption": "3", "yZoomedIn": false, "xLambda": 1 }'
+            if (null != state) {
+                options['state'] = state;
+            }
             options['width'] = 800;
             options['height'] = 500;
 
-            var chart = new google.visualization.MotionChart(document.getElementById('MotionChart'));
-            chart.draw(data, options);
+            var chart = new google.visualization.MotionChart(document.getElementById(id));
+            chart.draw(stateData, options);
+
+        }
+
+        function drawCharts() {
+
+            loadChart("./Data/LA-Natality-Census-Combined.json", 'StateChartDiv',
+                 '{ "colorOption": "2", "yZoomedDataMax": 51747, "iconType": "BUBBLE", "orderedByY": false, "xAxisOption": "2", "yZoomedDataMin": 420, "dimensions": { "iconDimensions": ["dim0"] }, "xZoomedDataMax": 14.9, "xZoomedIn": false, "yAxisOption": "3", "nonSelectedAlpha": 0.4, "duration": { "multiplier": 1, "timeUnit": "D" }, "yLambda": 1, "orderedByX": false, "uniColorForNonSelected": false, "xZoomedDataMin": 2.3, "iconKeySettings": [{ "key": { "dim0": "New York" } }], "playDuration": 15000, "time": "2003", "showTrails": false, "sizeOption": "3", "yZoomedIn": false, "xLambda": 1 }');
+
+            loadChart("./Data/LA-Natality-Census-Age-Combined.json", 'AgeChartDiv', null);
 
             //var table = new google.visualization.Table(document.getElementById('table_div'));
             //table.draw(data, { showRowNumber: true });

@@ -7,6 +7,10 @@ United States Department of Health and Human Services (US DHHS), Centers for Dis
 (CDC), National Center for Health Statistics (NCHS), Division of Vital Statistics, Natality public-use data on CDC
 WONDER Online Database, for years 2007-2013 available January 2015. Accessed at http://wonder.cdc.gov/natality-current.html on Mar 24, 2015 9:27 PM
 
+### Natality, 2007-2013-YearMonthStateAge.txt
+United States Department of Health and Human Services (US DHHS), Centers for Disease Control and Prevention
+(CDC), National Center for Health Statistics (NCHS), Division of Vital Statistics, Natality public-use data on CDC
+WONDER Online Database, for years 2007-2013 available January 2015. Accessed at http://wonder.cdc.gov/natality-current.html on May 3, 2015 9:25 PM
 
 ### Natality, 2003-2006-YearMonthStateAge.txt
 United States Department of Health and Human Services (US DHHS), Centers for Disease Control and Prevention
