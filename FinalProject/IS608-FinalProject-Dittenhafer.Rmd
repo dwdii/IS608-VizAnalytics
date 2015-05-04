@@ -41,44 +41,10 @@ bibLaborData <- bibentry(bibtype="Misc",
 ```{r}
 require.package("plyr")
 require.package("dplyr")
-
+dataPath <- "C:/Code/R/IS608-VizAnalytics/FinalProject/Data/"
 ```
 
 ```{r}
-#####
-# FUNCTION: loadBirthData 
-#
-#
-loadBirthData <- function()
-{
-  # Load the Natality data
-  birthFile <- "C:/Code/R/IS608-VizAnalytics/FinalProject/Data/Natality, 2007-2013-StateCounty.txt"
-  birthData <- read.table(birthFile, 
-                          header=TRUE, 
-                          sep="\t", 
-                          fill=TRUE, 
-                          stringsAsFactors=FALSE,
-                          colClasses=c('character', # Notes
-                                       'character', # Year
-                                       'character', # Year.Code
-                                       'character', # Month
-                                       'character', # Month.Code
-                                       'character', # State
-                                       'character', # State.Code
-                                       'character', # County
-                                       'character', # County.Code
-                                       'numeric'))  # Births
-  
-  #print(birthData[is.na(birthData$Births),])
-  birthDataWoNa <- subset(birthData, !is.na(birthData$Births), 
-                          select = - c(Notes, County, County.Code))  
-  birthDataWoNa <- dplyr::group_by(birthDataWoNa, 
-                                   Year, Year.Code, Month, Month.Code, State, State.Code)
-  birthDataWoNa <- dplyr::summarise(birthDataWoNa, sum(Births))
-  
-  return (birthDataWoNa)
-}
-
 #####
 # FUNCTION: loadBirthData2 
 #
@@ -119,7 +85,7 @@ loadBirthData2 <- function(birthFile)
 loadCensusData <- function()
 {
   # Load the Natality data
-  dataFile <- "C:/Code/R/IS608-VizAnalytics/FinalProject/Data/CO-EST2014-Alldata.csv"
+  dataFile <- sprintf("%s/CO-EST2014-Alldata.csv", dataPath)
   data <- read.table(dataFile, 
                           header=TRUE, 
                           sep=",", 
@@ -148,8 +114,7 @@ The `loadUnemploymentData` function shown below loads the local area unemploymen
 loadUnemploymentData <- function()
 {
   # Load the Local Area Unemployment data
-  path <- "C:/Code/R/IS608-VizAnalytics/FinalProject/Data"
-  dataFile <- sprintf("%s/la.data.3.AllStatesS.txt", path)
+  dataFile <- sprintf("%s/la.data.3.AllStatesS.txt", dataPath)
   dataTable <- read.table(dataFile, 
                           header=TRUE, 
                           sep="\t", 
@@ -164,7 +129,7 @@ loadUnemploymentData <- function()
                                        ))  
   
   # State IDs
-  dataFile <- sprintf("%s/la.state_region_division.txt", path)
+  dataFile <- sprintf("%s/la.state_region_division.txt", dataPath)
   states <- read.table(dataFile, 
                           header=TRUE, 
                           sep="\t", 
@@ -181,7 +146,7 @@ loadUnemploymentData <- function()
   #print(head(dataTable$series_id))
   
   # Period IDs (months)
-  dataFile <- sprintf("%s/la.period.txt", path)
+  dataFile <- sprintf("%s/la.period.txt", dataPath)
   periods <- read.table(dataFile, 
                           header=TRUE, 
                           sep="\t", 
@@ -209,13 +174,13 @@ loadUnemploymentData <- function()
 
 ```
 ```{r}
-bd <-loadBirthData()
-head(bd)
+#bd <-loadBirthData()
+#head(bd)
 
-birthFile <- "C:/Code/R/IS608-VizAnalytics/FinalProject/Data/Natality-2007-2013-YearMonthStateAge.txt"
+birthFile <- sprintf("%s/Natality-2007-2013-YearMonthStateAge.txt", dataPath)
 bd0713 <- loadBirthData2(birthFile)
 
-birthFile <- "C:/Code/R/IS608-VizAnalytics/FinalProject/Data/Natality-2003-2006-YearMonthStateAge.txt"
+birthFile <- sprintf("%s/Natality-2003-2006-YearMonthStateAge.txt", dataPath)
 bd0306 <- loadBirthData2(birthFile)
 head(bd0306)
 
@@ -228,8 +193,7 @@ head(ud)
 The following code snippet saves the massaged local area unemployment data to a comma separated value (CSV) file for reference and later use. 
 
 ```{r}
-path <- "C:/Code/R/IS608-VizAnalytics/FinalProject/Data"
-dataFile <- sprintf("%s/LA-States-2003-2013.csv", path)
+dataFile <- sprintf("%s/LA-States-2003-2013.csv", dataPath)
 bSaveUnempData <- FALSE
 if(bSaveUnempData)
 {
@@ -257,42 +221,7 @@ if(bSave)
 }
 ```
 
-## Symposium Related
-
-```{r}
-gitHubRoot <- "C:/Code/R/IS608-VizAnalytics/FinalProject/Data"
-#
-# FUNCTION: loadNationalUnemploymentData 
-#
-loadNationalUnemploymentData <- function()
-{
-  # Load the Unemployment data
-  dataFile <- sprintf("%s/USUnemploymentRates2003-2013.csv", gitHubRoot)
-  data <- read.table(dataFile, 
-                     header=TRUE, 
-                     sep=",", 
-                     fill=TRUE, 
-                     stringsAsFactors=FALSE) 
-  
-  # Melt the data to a long format
-  data <- reshape2::melt(data, 
-               id.vars=c("Year"), 
-               variable.name="Month", 
-               value.name="UnemploymentRate")
-  
-  # Transform raw year/month columns into a Date column, sorted
-  data <- dplyr::mutate(data, 
-                 Date = lubridate::parse_date_time(sprintf("%s-%s-01", 
-                                                            Year, 
-                                                            Month), 
-                                                    orders="ybd"))
-  data <- data[order(data$Date), ]
-
-  return (data)
-}
-
-unempData <- loadNationalUnemploymentData()
-```
+### Add Census and create Birth Rate.
 
 ```{r}
 
@@ -357,69 +286,13 @@ if(doBirthRateCombine)
   bSave <- TRUE
   if(bSave)
   {
-    dataFile <- sprintf("%s/LA-Natality-Census-Combined.csv", path)
+    dataFile <- sprintf("%s/LA-Natality-Census-Combined.csv", dataPath)
     write.table(udbcState, dataFile,sep=",", row.names=FALSE)  
          
-    dataFile <- sprintf("%s/LA-Natality-Census-Age-Combined.csv", path)
+    dataFile <- sprintf("%s/LA-Natality-Census-Age-Combined.csv", dataPath)
     write.table(udbcAge, dataFile,sep=",", row.names=FALSE)  
   }  
 }
-```
-
-```{r births_raw, echo=FALSE, fig.cap="U.S. Births 2003-2013", fig.path='figure/'}
-library(ggplot2)
-g1 <- ggplot(data=birthsPerYearMth, aes(x=Date))
-g1 <- g1 + geom_line(aes(y=Births, colour="Births"))
-g1 <- g1 + theme(axis.text.x = element_text(angle=30, vjust=1))
-g1 <- g1 + guides(colour = guide_legend("Legend"))
-g1 <- g1 + labs(title="United States Births 2003 - 2013",
-                x="Time",
-                y="Births")
-g1
-```
-
-```{r}
-modelRoot <- 3
-nth.root <- function(y, root)
-{
-  return (y ^ (1/root))
-}
-```
-
-```{r births_w_model, echo=FALSE, fig.cap="U.S. Births 2003-2013 with Model", fig.path='figure/'}
-
-g11 <- g1 + geom_point(data=unempData, aes(y=-5255729 + 
-                                  (-1723086 * UnemploymentRate) + 
-                                  (6049242 * nth.root(UnemploymentRate, modelRoot)) +
-                                  (454701 * UnemploymentRate * nth.root(UnemploymentRate, 
-                                                                                      modelRoot)), 
-                                colour="Model")) +
-      geom_smooth(aes(y=Births))
-
-
-g11
-```
-
-
-
-
-```{r annual_births, fig.path='figure/'}
-
-yrTotals <- aggregate(Births~ Year, udbc, FUN=sum )
-print(yrTotals)
-
-gT <- ggplot(yrTotals, aes(x=Year)) + geom_line(aes(y=Births)) +
-      labs(title="United States Births 2003 - 2013 Annually",
-                x="Time",
-                y="Births") +
-  theme(axis.ticks=element_blank(),
-                 axis.text.x=element_text(angle=60,hjust=1),
-                 panel.border = element_rect(color="gray", fill=NA),
-                 panel.background=element_rect(fill="#FBFBFB"),
-                 panel.grid.major.y=element_line(color="white", size=0.5),
-                 panel.grid.major.x=element_line(color="white", size=0.5))
-gT
-
 ```
 
 ### References
