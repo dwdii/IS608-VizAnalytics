@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Dittenhafer - Google Charts - Hw06</title>
+
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+
+        <!-- Optional theme -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+
+        <!--Load the AJAX API and Google Charts-->
+        <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+        
+        <style>
+          svg {
+            height: 620px;
+            width: 100%;
+          }
+
+          #vizchart2 rect {
+              fill: steelblue;
+          }
+
+          #vizchart2 text {
+                fill: white;
+                font: 10px sans-serif;
+                text-anchor: end;
+          }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-offset-1 col-xs-3">
+                    <h5>IS608 - Module 6 Google Charts Visualization<br />
+                    Daniel Dittenhafer</h5>
+                </div>
+            </div> 
+            <div class="row">
+                <div class="col-xs-offset-1 col-xs-10">
+                    
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-offset-1 col-xs-10">
+                  <div role="tabpanel">
+                  
+                    <!-- Nav tabs -->
+                    <ul class="nav nav-tabs" role="tablist">
+                      <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Home</a></li>
+                    </ul>
+                  
+                    <!-- Tab panes -->
+                    <div class="tab-content">
+                      <div role="tabpanel" class="tab-pane active" id="home">
+                        <div id="wait">Please wait while data is loaded and the visualization is prepared.</div>
+                          <div>Yes, the stacked area is not a good candidate for this data. The visualization is very busy, and not much can be decerned from it.
+                              None the less, I wanted to excerise the stacked area and compare the D3 and Google Charts approaches.
+                          </div>
+                        <div id="chart"><svg></svg></div>
+                      </div>
+                    </div>
+                  
+                  </div>                
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+
+            // Load the Visualization API and the piechart package.
+            google.load('visualization', '1', { packages: ['corechart'] });
+            google.load('visualization', '1', { packages: ['table'] });
+
+            // Set a callback to run when the Google Visualization API is loaded.
+            google.setOnLoadCallback(drawCharts);
+
+            _newData = [];
+
+            function massageData(data) {
+                // First need to convert the data from Google Viz Data format to a format that 
+                // is friendlier to NVD3 and D3.
+                currentState = "";
+                
+                header = [];
+                header.push('Date');
+                _newData.push(header);
+                data.rows.forEach(function (r) {
+                    var thisD = null;
+                    var aDate = eval("new " + r.c[1].v);
+                    _newData.forEach(function (d) {
+                        if (d[0] != "Date" && aDate.getTime() == d[0].getTime()) {
+                            thisD = d;
+                        }
+                    })
+
+                    // If not in the list yet, add it.
+                    if(null == thisD)
+                    {
+                        thisD = [];
+                        thisD.push(aDate);
+                        for (var i = 0; i < 51; i++) {
+                            thisD.push(null);
+                        }
+
+                        // Add the data to the new structure
+                        _newData.push(thisD)
+                    }
+
+                    // Determine column index
+                    var ndx = 0;
+                    var bFound = false;
+                    header.forEach(function (h) {
+                        if (h == r.c[0].v) {
+                            bFound = true;
+                        }
+                        else if (!bFound) {
+                            ndx++;
+                        }
+                    })
+
+                    // Add the column header if not found
+                    if (!bFound) {
+                        header.push(r.c[0].v);
+                    }
+
+                    // Fill in the data.
+                    thisD[ndx] = r.c[3].v;
+                })
+            }
+
+            function loadChart(dataFile, id, options) {
+
+                var jsonStateData = $.ajax({
+                    url: dataFile,
+                    dataType: "json",
+                    async: false
+                }).responseJSON;
+
+                massageData(jsonStateData);
+
+                // Create our data table out of JSON data loaded from server.
+                var stateData = new google.visualization.arrayToDataTable(_newData);
+
+                if (null == options) {
+                    options = {};
+                }
+                options['width'] = 800;
+                options['height'] = 500;
+
+                var chart = new google.visualization.AreaChart(document.getElementById(id));
+                chart.draw(stateData, options);
+
+                $("#wait").hide()
+
+            }
+
+            function drawCharts() {
+
+                var options = {
+                    title: "Births by State",
+                    isStacked: true
+                }
+
+                loadChart("Natality2003-2013-StateYearMonthUnemp.json", 'chart',
+                     options);
+            }
+
+    </script>
+    </body>
+</html>
