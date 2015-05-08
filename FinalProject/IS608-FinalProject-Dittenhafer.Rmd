@@ -273,17 +273,28 @@ if(doBirthRateCombine)
   print(head(udbcState))
   
   # Age Oriented
-  udbcAge <- mutate(udbc, StateAgeOfMother=paste(State, Age.of.Mother, sep=" "))
-  udbcAge <- subset(udbcAge, 
-                       select=c("StateAgeOfMother",
+  #udbcAge <- mutate(udbc, StateAgeOfMother=paste(State, Age.of.Mother, sep=" "))
+  udbcAge <- subset(udbc, 
+                       select=c(#"StateAgeOfMother",
                                 "Year.Code","Month.Code",
                                 "Births",
                                 "UnemploymentRate",
                                 "CENSUS2010POPThousands",
-                                "Age.of.Mother",
-                                "State"))  
+                                "Age.of.Mother"
+                                #,"State"
+                                )
+                    )  
 
-  udbcAge <- aggregate(cbind(Births) ~ StateAgeOfMother+Year.Code+Month.Code+UnemploymentRate+CENSUS2010POPThousands+Age.of.Mother+State, udbcAge, sum)
+  # udbcAge <- aggregate(cbind(Births) ~ StateAgeOfMother+Year.Code+Month.Code+UnemploymentRate+CENSUS2010POPThousands+Age.of.Mother+State, udbcAge, sum)
+  udbcAge <- ddply(udbcAge,
+                   .(Year.Code,
+                     Month.Code,
+                     Age.of.Mother),
+                   summarise,
+                   Births=sum(Births),
+                   UnemploymentRate=mean(UnemploymentRate),
+                   CENSUS2010POPThousands=sum(CENSUS2010POPThousands))
+  
   udbcAge <- mutate(udbcAge, BirthsPer1000Pop=Births / CENSUS2010POPThousands)
   print(head(udbcAge))
   
