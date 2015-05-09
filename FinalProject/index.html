@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
 
-    <title>U.S. Natality &amp; Unemployment Rate - IS608 Knowledge &amp; Visual Analytics</title>
+    <title>U.S. Natality 2003 - 2013 - IS608 Knowledge &amp; Visual Analytics</title>
 
     <!-- Bootstrap minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
@@ -13,10 +13,18 @@
     <!-- Optional theme -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
 
+    <link rel="stylesheet" href="https://cdn.rawgit.com/novus/nvd3/v1.7.1/build/nv.d3.css">
+
+    <script type="text/javascript" src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/novus/nvd3/v1.7.1/build/nv.d3.min.js"></script>
+
     <style>
         body {
           position: relative;
-          margin-left: 110px
+        }
+
+        #ContentContainer {
+            margin-left: 140px
         }
 
         #mysidenav {
@@ -25,15 +33,23 @@
             left: 10px;
         }
 
-        h2 {
-            padding-top:20px;
+        .NavHeader {
+            padding-top:55px;
+        }
+
+        #AgeLineChart {
+            height: 480px;
+        }
+
+        .Citation {
+            margin-bottom: 7px
         }
     </style>
 
     
   </head>
    
-  <body data-spy="scroll" data-target="#mysidenav" data-offset="200">
+  <body data-spy="scroll" data-target="#mysidenav" data-offset="200" onload="initPage()">
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
@@ -43,7 +59,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">U.S. Natality &amp; Unemployment Rate</a>
+          <a class="navbar-brand" href="#">U.S. Natality 2003-2013</a>
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
@@ -55,18 +71,21 @@
       </div>
     </nav>
 
-    <div class="container" style="margin-top:50px">
+    <div id="ContentContainer" class="container" style="margin-top:50px">
         <div class="row">
-            <div id="Project"  />
-            <h2>U.S. Natality &amp; Unemployment Rate By State, Age of Mother</h2>
-            <h3>Preface</h3>
-            <p>This project was undertaken as part of the Knowledge &amp; Visual Analytics (IS608) course requirements for the <a href="http://sps.cuny.edu/programs/ms_dataanalytics">Master of Science, Data Analytics</a> program at <a href="http://www.cuny.edu/index.html">City University of New York (CUNY)</a>.</p>
+            <div class="col-md-10">
+                <div id="Project"></div>
+                <h2>U.S. Natality 2003-2013</h2>
+                <h4> An Analysis with Unemployment Rate By State &amp; Age of Mother</h4>
+                <h3>Preface</h3>
+                <p>This project was undertaken as part of the Knowledge &amp; Visual Analytics (IS608) course requirements for the <a href="http://sps.cuny.edu/programs/ms_dataanalytics">Master of Science, Data Analytics</a> program at <a href="http://www.cuny.edu/index.html">City University of New York (CUNY)</a>.</p>
 
-            <h3>Project</h3>
-            <p>The United States Department of Health and Human Services (USHHS) compiles and publishs data sets containing birth and related data for the entire
-                United States. This data is derived from data provided to the National Vital Statistics System by the National Center for Health Statistics (NCHS) 
-                and the States where the data originates.
-            </p>
+                <h3>Project</h3>
+                <p>The United States Department of Health and Human Services (USHHS) compiles and publishs data sets containing birth and related data for the entire
+                    United States. This data is derived from data provided to the National Vital Statistics System by the National Center for Health Statistics (NCHS) 
+                    and the States where the data originates.
+                </p>
+            </div>
             <br />
             <br />
             <br />
@@ -96,31 +115,63 @@
             <br />
             <br />
         </div>
-        <div id="chart_div"></div>
+        <div class="row">
+            <div class="col-md-10">
 
-        <!--Div that will hold the State motion chart-->
-        <h2 id="StateChart">State Chart</h2>
-        <div id="StateChartDiv"></div>
-        <br />
-
-        <!--Div that will hold the Age motion chart-->
-        <h2 id="AgeChart">Age Chart</h2>
-        <div id="AgeChartDiv"></div>
-        <br />
-
-        <!-- Div for the Data Download section -->
-        <h2 id="DataDownload">Data Download</h2>
-        <div>
-            The raw data used to produce the visualizations can be download via the following links:
-            <ul>
-                <li><a href="./Data/LA-Natality-Census-Combined.json">State Chart: State / Birth Time-Series in JSON format</a></li>
-                <li><a href="./Data/LA-Natality-Census-Age-Combined.json">Age Chart: Age / Birth Time-Series in JSON format</a></li>
-            </ul>
+                <!--Div that will hold the State motion chart-->
+                <h2 id="StateChart" class="NavHeader">State Chart</h2>
+                <div id="StateChartDiv"></div>
+                <br />
+            </div>
         </div>
-        <br />
+        <div class="row">
+            <div class="col-md-10">
+                <!--Div that will hold the Age motion chart-->
+                <h2 id="AgeChart" class="NavHeader">Age Chart</h2>
+                <div id="AgeChartDiv"></div>
+                <div id="AgeLineChart"><svg></svg></div>
+                The line chart above shows the birth rate per 1000 people split up by the age of the mother. 
+                Some interesting changes can be seen though this visualization. 
+                <ul>
+                    <li>For births to mothers age 15-19, a peak August 2007 at 0.13 births/1000 begins a steady decline ~0.08 births/1000 in August 2013, a 38% drop for this age range.</li>
+                    <li>Prior to February 2010, mothers 20-24 were second only to the 25-29 group in birth rate, but starting in March 2011, the 30-34 group's birth rate surpases the 25-29 year olds.</li>
+                    <li>It appears mothers 20-29 contributed the most to the increase in births in the 2006-2007 time period.</li>
+                </ul>
+            </div>
+        </div>
 
-        <!-- Div for the References section -->
-        <h2 id="Reference">References</h2>
+        <div class="row">
+            <div class="col-md-10">
+                <!-- Div for the Data Download section -->
+                <h2 id="DataDownload" class="NavHeader">Data Download</h2>
+                <div>
+                    The raw data used to produce the visualizations can be download via the following links:
+                    <ul>
+                        <li><a href="./Data/LA-Natality-Census-Combined.json">State Chart: State / Birth Time-Series in JSON format</a></li>
+                        <li><a href="./Data/LA-Natality-Census-Age-Combined.json">Age Chart: Age / Birth Time-Series in JSON format</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-10">
+                <!-- Div for the References section -->
+                <h2 id="Reference" class="NavHeader">References</h2>
+                <div class="Citation">
+                    United States Department of Commerce, Census Bureau. Accessed at <a href="http://www.census.gov/popest/data/counties/totals/2014/CO-EST2014-alldata.html">http://www.census.gov/popest/data/counties/totals/2014/CO-EST2014-alldata.html</a> on April 14, 2015
+                </div>
+                <div class="Citation">
+                    United States Department of Health and Human Services (US DHHS), Centers for Disease Control and Prevention (CDC), National Center for Health Statistics (NCHS), Division of Vital Statistics, Natality public-use data on CDC WONDER Online Database, for years 2007-2013 available January 2015. Accessed at <a href="http://wonder.cdc.gov/natality-current.html">http://wonder.cdc.gov/natality-current.html</a> on May 3, 2015 9:25 PM
+                </div>
+                <div class="Citation">
+                    United States Department of Health and Human Services (US DHHS), Centers for Disease Control and Prevention (CDC), National Center for Health Statistics (NCHS), Division of Vital Statistics, Natality public-use data on CDC WONDER Online Database, for years 2003-2006 available March 2009. Accessed at <a href="http://wonder.cdc.gov/natality-v2006.html">http://wonder.cdc.gov/natality-v2006.html</a> on April 6, 2015 8:51 PM
+                </div>
+                <div class="Citation">
+                    United States Department of Labor, Bureau of Labor Statistics. Labor Force Statistics from the Current Population Survey Accessed at <a href="http://data.bls.gov/timeseries/LNS14000000">http://data.bls.gov/timeseries/LNS14000000</a> on April 6, 2015 10:55 PM
+                </div>
+            </div>
+        </div>
         <br />
         <a href="https://developers.google.com/chart/interactive/docs/gallery/motionchart">Google Motion Chart</a>
         <div id="table_div"></div>
@@ -185,10 +236,85 @@
             loadChart("./Data/LA-Natality-Census-Combined.json", 'StateChartDiv',
                  '{ "colorOption": "2", "yZoomedDataMax": 51747, "iconType": "BUBBLE", "orderedByY": false, "xAxisOption": "2", "yZoomedDataMin": 420, "dimensions": { "iconDimensions": ["dim0"] }, "xZoomedDataMax": 14.9, "xZoomedIn": false, "yAxisOption": "3", "nonSelectedAlpha": 0.4, "duration": { "multiplier": 1, "timeUnit": "D" }, "yLambda": 1, "orderedByX": false, "uniColorForNonSelected": false, "xZoomedDataMin": 2.3, "iconKeySettings": [{ "key": { "dim0": "New York" } }], "playDuration": 15000, "time": "2003", "showTrails": false, "sizeOption": "3", "yZoomedIn": false, "xLambda": 1 }');
 
-            loadChart("./Data/LA-Natality-Census-Age-Combined.json", 'AgeChartDiv', null);
+            //loadChart("./Data/LA-Natality-Census-Age-Combined.json", 'AgeChartDiv', 
+            //    '{"time":"2013-12-01","yZoomedIn":false,"xLambda":1,"colorOption":"_UNIQUE_COLOR","xZoomedDataMax":1385856000000,"yLambda":1,"sizeOption":"_UNISIZE","uniColorForNonSelected":false,"yAxisOption":"3","dimensions":{"iconDimensions":["dim0"]},"yZoomedDataMax":0.4,"orderedByX":false,"iconType":"LINE","duration":{"timeUnit":"D","multiplier":1},"yZoomedDataMin":0,"xAxisOption":"_TIME","showTrails":false,"orderedByY":false,"iconKeySettings":[{"key":{"dim0":"15-19 years"}},{"key":{"dim0":"30-34 years"}},{"key":{"dim0":"20-24 years"}},{"key":{"dim0":"35-39 years"}},{"key":{"dim0":"25-29 years"}}],"xZoomedDataMin":1041379200000,"playDuration":15000,"nonSelectedAlpha":0.4,"xZoomedIn":false}');
 
             //var table = new google.visualization.Table(document.getElementById('table_div'));
             //table.draw(data, { showRowNumber: true });
+
+        }
+        /* D3 Related Chart Scripts below */ 
+        var _data = []
+        function initPage() {
+            $(function () {
+                $('#myTab a:last').tab('show')
+            })
+
+
+            d3.json('./Data/LA-Natality-Census-Age-Combined.json', function (data) {
+
+                // First need to convert the data from Google Viz Data format to a format that 
+                // is friendlier to NVD3 and D3.
+                massageDataForNVD3(data)
+
+                nvd3LineChart()
+
+            })
+        }
+
+        function massageDataForNVD3(data) {
+            // First need to convert the data from Google Viz Data format to a format that 
+            // is friendlier to NVD3 and D3.
+            currentState = "";
+            aSeries = null;
+            data.rows.forEach(function (r) {
+                if (r.c[0].v != currentState) {
+                    if (aSeries != null) {
+                        _data.push(aSeries);
+                    }
+
+                    currentState = r.c[0].v
+                    aSeries = new Object()
+                    aSeries.key = currentState;
+                    aSeries.values = new Array();
+                }
+
+                aSeries.values.push([eval("new " + r.c[1].v), eval(r.c[3].v)])
+            })
+        }
+
+        function nvd3LineChart() {
+
+            // Initial the line chart
+            nv.addGraph(function () {
+                var chart = nv.models.lineChart()
+                              .margin({ left: 90 })  //Adjust chart margins to give the x-axis some breathing room.
+                              .x(function (d) { return d[0] })   //We can modify the data accessor functions...
+                              .y(function (d) { return d[1] })   //...in case your data is formatted differently.
+                              .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
+                              .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+                              .showYAxis(true)        //Show the y-axis
+                              .showXAxis(true)        //Show the x-axis
+                ;
+
+                chart.xAxis     //Chart x-axis settings
+                    .axisLabel('Time')
+                    .tickFormat(function (d) {
+                        return d3.time.format('%x')(new Date(d))
+                    });
+
+                chart.yAxis     //Chart y-axis settings
+                    .axisLabel('Birth Rate / 1,000 People')
+                    .tickFormat(d3.format(',.3f'));
+
+                d3.select('#AgeLineChart svg')    //Select the <svg> element you want to render the chart in.   
+                    .datum(_data)         //Populate the <svg> element with chart data...
+                    .call(chart);          //Finally, render the chart!
+                    
+                //Update the chart when window resizes.
+                nv.utils.windowResize(function () { chart.update() });
+                return chart;
+            });
 
         }
 
