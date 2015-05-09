@@ -283,9 +283,8 @@ if(doBirthRateCombine)
                                 "Age.of.Mother"
                                 #,"State"
                                 )
-                    )
+                    )  
 
-  
   # udbcAge <- aggregate(cbind(Births) ~ StateAgeOfMother+Year.Code+Month.Code+UnemploymentRate+CENSUS2010POPThousands+Age.of.Mother+State, udbcAge, sum)
   udbcAge <- ddply(udbcAge,
                    .(Year.Code,
@@ -296,14 +295,8 @@ if(doBirthRateCombine)
                    UnemploymentRate=mean(UnemploymentRate),
                    CENSUS2010POPThousands=sum(CENSUS2010POPThousands))
   
-  
-  lagmatrix <- function(x,max.lag) embed(c(rep(NA,max.lag), x), max.lag+1)
-  
-  udbcAge$PriorBirths <- lagmatrix(udbcAge$Births, 1)
-  udbcAge <- mutate(udbcAge, BirthDiff=PriorBirths - Births)  
-  
   udbcAge <- mutate(udbcAge, BirthsPer1000Pop=Births / CENSUS2010POPThousands)
-  head(udbcAge)
+  print(head(udbcAge))
   
   
   bSave <- TRUE
