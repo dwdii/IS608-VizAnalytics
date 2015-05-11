@@ -24,7 +24,8 @@
         }
 
         #ContentContainer {
-            margin-left: 140px
+            margin-left: 140px;
+            margin-top: 50px
         }
 
         #mysidenav {
@@ -37,12 +38,29 @@
             padding-top:55px;
         }
 
+        #NationalBirths {
+            height: 320px;
+        }
+
+        #NationalBirthRate {
+            height: 320px;
+        }
+
+        #StateChartDiv {
+            margin-bottom: 14px;
+        }
+
         #AgeLineChart {
             height: 480px;
         }
 
         .Citation {
             margin-bottom: 7px
+        }
+
+        .InTextRef {
+            font-size:xx-small; 
+            vertical-align:top; 
         }
     </style>
 
@@ -71,57 +89,86 @@
       </div>
     </nav>
 
-    <div id="ContentContainer" class="container" style="margin-top:50px">
+    <div id="ContentContainer" class="container">
         <div class="row">
             <div class="col-md-10">
                 <div id="Project"></div>
                 <h2>U.S. Natality 2003-2013</h2>
-                <h4> An Analysis with Unemployment Rate By State &amp; Age of Mother</h4>
+                <h4> An Analysis of Births with Unemployment Rate By State &amp; Age of Mother</h4>
                 <h3>Preface</h3>
                 <p>This project was undertaken as part of the Knowledge &amp; Visual Analytics (IS608) course requirements for the <a href="http://sps.cuny.edu/programs/ms_dataanalytics">Master of Science, Data Analytics</a> program at <a href="http://www.cuny.edu/index.html">City University of New York (CUNY)</a>.</p>
 
                 <h3>Project</h3>
-                <p>The United States Department of Health and Human Services (USHHS) compiles and publishs data sets containing birth and related data for the entire
+                <p>
+                    The Centers for Disease Control (CDC), under the United States Department of Health and Human Services (USHHS), compiles and publishes data
+                    sets containing birth and related data points for the entire
                     United States. This data is derived from data provided to the National Vital Statistics System by the National Center for Health Statistics (NCHS) 
-                    and the States where the data originates.
+                    and the States where the data originates. 
+                </p>
+                <p>
+                    Based on the <abbr title="Centers for Disease Control" class="initialism">CDC</abbr> data, the United States birth rate reached a peak 
+                    in 2007 of 13.97 births per 1,000 people (2010 Census) or 4,313,113 total births. Since that time, both total births and the birth rate
+                    have fallen. 
                 </p>
             </div>
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
-            <br />
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div id="NationalBirths"><svg></svg></div>
+            </div>
+            <div class="col-md-4">
+                <div id="NationalBirthRate"><svg></svg></div>
+             </div>
         </div>
         <div class="row">
             <div class="col-md-10">
-
+                <p>
+                    Please note that birth rate and fertility rate, although similar, are not the same. The CDC defines these terms as follows:
+                </p>
+                <dl class="dl-horizontal">
+                    <dt>Birth Rate</dt>
+                    <dd>The number of births divided by total population in the given year(s).</dd>
+                    <dt>Fertility Rate</dt>
+                    <dd>The number of births divided by the number of females age 15 - 44 years old in the given year(s).</dd>
+                </dl>
+                <p>
+                    For the purposes of the current analysis, the 2010 Census population has been used uniformly for all years as opposed to population estimates. This
+                    has the effect of making birth rate comparable in the sense that the values for the period are relative to the 2010 reference year 
+                    (similar to a real vs nominal value in economics). Additionally,
+                    for a population which is increasing and a given number of births/year, the birth rate would drop, whereas with a fixed reference year, an equal number
+                    births will yield no change in birth rate.   
+                </p>
+               <p>
+                    Birth data by Year, Month, State and Mother's Age was acquired from the 
+                    <abbr title="Centers for Disease Control" class="initialism">CDC</abbr> <a href="http://wonder.cdc.gov/" target="_blank">WONDER website</a>
+                    <a href="#Cdc2003" class="InTextRef">2</a>&nbsp;<a href="#Cdc2007" class="InTextRef">3</a>. 
+                </p>
+                <p>
+                    The Bureau of Labor Statistics (BLS), under the United States Department of Labor, compiles unemployment data for the nation as a whole, as well
+                    as local areas. The state specific unemployment rates for the period 2003-2013 were acquired from 
+                    <abbr title="Bureau of Labor Statistics" class="initialism">BLS</abbr>
+                    <a href="http://www.bls.gov/data/#unemployment">Local Area Unemployment Statistics</a><a href="#Cdc2007" class="InTextRef">5</a>.
+                </p>
+                
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
                 <!--Div that will hold the State motion chart-->
                 <h2 id="StateChart" class="NavHeader">State Chart</h2>
                 <div id="StateChartDiv"></div>
-                <br />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-9">
+                <p>
+                The motion bubble chart, above, initially shows the snapshot of birth rate and unemployment rate per State in early August 2007, at the peak of birth activity
+                    during the analyzed period. This is also just before official start of the recession in December 2007 <a href="#BlsRecession" class="InTextRef">6</a>. 
+                    By pressing the play button in the lower left hand corner of the chart, you can watch as the recession hits, unemployment surges 
+                    and births reduce off their peaks. You may notice there is not a clear relationship between births and unemployment. In fact, while 
+                    many states have overall reduced births during the high unemployment period of 2009-2010, other states including Utah tend to maintain 
+                    their birth rate during this time.
+                </p>
             </div>
         </div>
         <div class="row">
@@ -130,13 +177,29 @@
                 <h2 id="AgeChart" class="NavHeader">Age Chart</h2>
                 <div id="AgeChartDiv"></div>
                 <div id="AgeLineChart"><svg></svg></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-10">
+                <p>
                 The line chart above shows the birth rate per 1000 people split up by the age of the mother. 
                 Some interesting changes can be seen though this visualization. 
+                </p>
                 <ul>
                     <li>For births to mothers age 15-19, a peak August 2007 at 0.13 births/1000 begins a steady decline ~0.08 births/1000 in August 2013, a 38% drop for this age range.</li>
                     <li>Prior to February 2010, mothers 20-24 were second only to the 25-29 group in birth rate, but starting in March 2011, the 30-34 group's birth rate surpases the 25-29 year olds.</li>
                     <li>It appears mothers 20-29 contributed the most to the increase in births in the 2006-2007 time period.</li>
                 </ul>
+                <p>
+                    It should be noted that the CDC removes some values from the data sets for privacy reasons. The following quote is taken from their dataset documentation page. 
+                </p>
+                <blockquote style="font-size:smaller;">
+                    <p>
+                        Vital statistics data are suppressed due to confidentiality constraints, in order to protect personal privacy. 
+                        The term "Suppressed" replaces sub-national births counts, birth rates and fertility rates, when the figure represents zero to nine (0-9) persons.  
+                    </p>
+                    <footer>Assurance of Confidentiality Constraints, CDC WONDER</footer>
+                </blockquote>
             </div>
         </div>
 
@@ -158,18 +221,31 @@
             <div class="col-md-10">
                 <!-- Div for the References section -->
                 <h2 id="Reference" class="NavHeader">References</h2>
-                <div class="Citation">
-                    United States Department of Commerce, Census Bureau. Accessed at <a href="http://www.census.gov/popest/data/counties/totals/2014/CO-EST2014-alldata.html">http://www.census.gov/popest/data/counties/totals/2014/CO-EST2014-alldata.html</a> on April 14, 2015
-                </div>
-                <div class="Citation">
-                    United States Department of Health and Human Services (US DHHS), Centers for Disease Control and Prevention (CDC), National Center for Health Statistics (NCHS), Division of Vital Statistics, Natality public-use data on CDC WONDER Online Database, for years 2007-2013 available January 2015. Accessed at <a href="http://wonder.cdc.gov/natality-current.html">http://wonder.cdc.gov/natality-current.html</a> on May 3, 2015 9:25 PM
-                </div>
-                <div class="Citation">
-                    United States Department of Health and Human Services (US DHHS), Centers for Disease Control and Prevention (CDC), National Center for Health Statistics (NCHS), Division of Vital Statistics, Natality public-use data on CDC WONDER Online Database, for years 2003-2006 available March 2009. Accessed at <a href="http://wonder.cdc.gov/natality-v2006.html">http://wonder.cdc.gov/natality-v2006.html</a> on April 6, 2015 8:51 PM
-                </div>
-                <div class="Citation">
-                    United States Department of Labor, Bureau of Labor Statistics. Labor Force Statistics from the Current Population Survey Accessed at <a href="http://data.bls.gov/timeseries/LNS14000000">http://data.bls.gov/timeseries/LNS14000000</a> on April 6, 2015 10:55 PM
-                </div>
+                <ol>               
+                    <li class="Citation" >
+                        United States Department of Commerce, Census Bureau. Accessed at <a href="http://www.census.gov/popest/data/counties/totals/2014/CO-EST2014-alldata.html" target="_blank">http://www.census.gov/popest/data/counties/totals/2014/CO-EST2014-alldata.html</a> on April 14, 2015
+                    </li>
+                    <li class="Citation" id="Cdc2003">
+                        United States Department of Health and Human Services (US DHHS), Centers for Disease Control and Prevention (CDC), National Center for Health Statistics (NCHS), Division of Vital Statistics, Natality public-use data on CDC WONDER Online Database, for years 2003-2006 available March 2009. Accessed at <a href="http://wonder.cdc.gov/natality-v2006.html" target="_blank">http://wonder.cdc.gov/natality-v2006.html</a> on April 6, 2015 8:51 PM
+                    </li>
+                    <li class="Citation" id="Cdc2007">
+                        United States Department of Health and Human Services (US DHHS), Centers for Disease Control and Prevention (CDC), National Center for Health Statistics (NCHS), Division of Vital Statistics, Natality public-use data on CDC WONDER Online Database, for years 2007-2013 available January 2015. Accessed at <a href="http://wonder.cdc.gov/natality-current.html" target="_blank">http://wonder.cdc.gov/natality-current.html</a> on May 3, 2015 9:25 PM
+                    </li>
+                    <li class="Citation" id="CdcNatalityDoc">
+                        United States Department of Health and Human Services (US DHHS), Centers for Disease Control and Prevention (CDC), National Center for Health Statistics (NCHS), Division of Vital Statistics, Natality Data Summary <a href="http://wonder.cdc.gov/wonder/help/Natality.html">http://wonder.cdc.gov/wonder/help/Natality.html</a>.
+                    </li>
+                    <li class="Citation" id="BlsLaus">
+                        United States Department of Labor (US DOL), Bureau of Labor Statistics (BLS), Local Area Unemployment Statistics (LAUS) Accessed at <a href="http://download.bls.gov/pub/time.series/la/" target="_blank">http://download.bls.gov/pub/time.series/la/</a> on Mar 30, 2015 9:21 PM
+                    </li>
+                    <li class="Citation" id="BlsRecession">
+                        United States Department of Labor, Bureau of Labor Statistics. "The Recession of 2007–2009". Accessed at <a href="http://www.bls.gov/spotlight/2012/recession/pdf/recession_bls_spotlight.pdf" target="_blank">http://www.bls.gov/spotlight/2012/recession/pdf/recession_bls_spotlight.pdf</a> on May 9, 2015
+                    </li>
+                    <li class="Citation" id="PewLivingston">
+                        Livingston, Gretchen, and D’Vera Cohn. "U.S. Birth Rate Decline Linked to Recession." Pew Research Centers Social Demographic Trends Project RSS. Pew Research Centers, 05 Apr. 2010. Web. 09 May 2015. 
+                        <a href="http://www.pewsocialtrends.org/2010/04/06/us-birth-rate-decline-linked-to-recession/">http://www.pewsocialtrends.org/2010/04/06/us-birth-rate-decline-linked-to-recession/</a>.
+                    </li>
+                </ol>
+                
             </div>
         </div>
         <br />
@@ -223,8 +299,8 @@
             if (null != state) {
                 options['state'] = state;
             }
-            options['width'] = 800;
-            options['height'] = 500;
+            options['width'] = 600;
+            options['height'] = 400;
 
             var chart = new google.visualization.MotionChart(document.getElementById(id));
             chart.draw(stateData, options);
@@ -234,7 +310,7 @@
         function drawCharts() {
 
             loadChart("./Data/LA-Natality-Census-Combined.json", 'StateChartDiv',
-                 '{ "colorOption": "2", "yZoomedDataMax": 51747, "iconType": "BUBBLE", "orderedByY": false, "xAxisOption": "2", "yZoomedDataMin": 420, "dimensions": { "iconDimensions": ["dim0"] }, "xZoomedDataMax": 14.9, "xZoomedIn": false, "yAxisOption": "3", "nonSelectedAlpha": 0.4, "duration": { "multiplier": 1, "timeUnit": "D" }, "yLambda": 1, "orderedByX": false, "uniColorForNonSelected": false, "xZoomedDataMin": 2.3, "iconKeySettings": [{ "key": { "dim0": "New York" } }], "playDuration": 15000, "time": "2003", "showTrails": false, "sizeOption": "3", "yZoomedIn": false, "xLambda": 1 }');
+                 '{"xZoomedIn":false,"iconKeySettings":[{"key":{"dim0":"New York"}},{"key":{"dim0":"Utah"}},{"key":{"dim0":"Vermont"}}],"yZoomedIn":false,"xLambda":1,"colorOption":"_UNICOLOR","playDuration":80,"xZoomedDataMax":14.9,"yLambda":1,"sizeOption":"3","nonSelectedAlpha":0.1,"uniColorForNonSelected":false,"yZoomedDataMin":0.6552231674127149,"dimensions":{"iconDimensions":["dim0"]},"yZoomedDataMax":1.8531885371497,"xAxisOption":"2","orderedByX":false,"orderedByY":false,"yAxisOption":"3","showTrails":false,"time":"2007-08-07","iconType":"BUBBLE","xZoomedDataMin":2.3,"duration":{"timeUnit":"D","multiplier":1}}');
 
             //loadChart("./Data/LA-Natality-Census-Age-Combined.json", 'AgeChartDiv', 
             //    '{"time":"2013-12-01","yZoomedIn":false,"xLambda":1,"colorOption":"_UNIQUE_COLOR","xZoomedDataMax":1385856000000,"yLambda":1,"sizeOption":"_UNISIZE","uniColorForNonSelected":false,"yAxisOption":"3","dimensions":{"iconDimensions":["dim0"]},"yZoomedDataMax":0.4,"orderedByX":false,"iconType":"LINE","duration":{"timeUnit":"D","multiplier":1},"yZoomedDataMin":0,"xAxisOption":"_TIME","showTrails":false,"orderedByY":false,"iconKeySettings":[{"key":{"dim0":"15-19 years"}},{"key":{"dim0":"30-34 years"}},{"key":{"dim0":"20-24 years"}},{"key":{"dim0":"35-39 years"}},{"key":{"dim0":"25-29 years"}}],"xZoomedDataMin":1041379200000,"playDuration":15000,"nonSelectedAlpha":0.4,"xZoomedIn":false}');
@@ -245,6 +321,8 @@
         }
         /* D3 Related Chart Scripts below */ 
         var _data = []
+        
+
         function initPage() {
             $(function () {
                 $('#myTab a:last').tab('show')
@@ -260,6 +338,43 @@
                 nvd3LineChart()
 
             })
+
+            var nationalBirths = []
+            var births = new Object();
+            births.key = "Births";
+            births.values = [];
+            births.values.push([2003, 4089950]);
+            births.values.push([2004, 4112052]);
+            births.values.push([2005, 4138349]);
+            births.values.push([2006, 4265555]);
+            births.values.push([2007, 4316233]);
+            births.values.push([2008, 4247694]);
+            births.values.push([2009, 4130665]);
+            births.values.push([2010, 3999386]);
+            births.values.push([2011, 3953590]);
+            births.values.push([2012, 3952841]);
+            births.values.push([2013, 3932181]);
+            nationalBirths.push(births);
+            nvd3LineChartEx(nationalBirths, "Year", d3.format("f"), "Births (Thousands)", function (y) { return d3.format(",.f")(y / 1000); }, "#NationalBirths svg");
+
+            var nationalBirthRate = []
+            var birthRate = new Object();
+            birthRate.key = "Birth Rate";
+            birthRate.color = '#33ccff'
+            birthRate.values = [];
+            birthRate.values.push([2003, 13.24699]);
+            birthRate.values.push([2004, 13.31858]);
+            birthRate.values.push([2005, 13.40375]);
+            birthRate.values.push([2006, 13.81576]);
+            birthRate.values.push([2007, 13.97990]);
+            birthRate.values.push([2008, 13.75791]);
+            birthRate.values.push([2009, 13.37887]);
+            birthRate.values.push([2010, 12.95366]);
+            birthRate.values.push([2011, 12.80533]);
+            birthRate.values.push([2012, 12.80291]);
+            birthRate.values.push([2013, 12.73599]);
+            nationalBirthRate.push(birthRate);
+            nvd3LineChartEx(nationalBirthRate, "Year", d3.format("f"), "Birth Rate (Per Thousand Population)", d3.format(",.f"), "#NationalBirthRate svg");
         }
 
         function massageDataForNVD3(data) {
@@ -317,6 +432,40 @@
             });
 
         }
+
+        function nvd3LineChartEx(theData, xLabel, xFormat, yLabel, yFormat, id) {
+
+            // Initialize the line chart
+            nv.addGraph(function () {
+                var chart = nv.models.lineChart()
+                              .margin({ left: 90 })  //Adjust chart margins to give the x-axis some breathing room.
+                              .x(function (d) { return d[0] })   //We can modify the data accessor functions...
+                              .y(function (d) { return d[1] })   //...in case your data is formatted differently.
+                              .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
+                              .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+                              .showYAxis(true)        //Show the y-axis
+                              .showXAxis(true)        //Show the x-axis
+                ;
+
+                chart.xAxis     //Chart x-axis settings
+                    .axisLabel(xLabel)
+                    .tickFormat(xFormat);
+
+                chart.yAxis     //Chart y-axis settings
+                    .axisLabel(yLabel)
+                    .tickFormat(yFormat);
+
+                d3.select(id)    //Select the <svg> element you want to render the chart in.   
+                    .datum(theData)         //Populate the <svg> element with chart data...
+                    .call(chart);          //Finally, render the chart!
+
+                //Update the chart when window resizes.
+                nv.utils.windowResize(function () { chart.update() });
+                return chart;
+            });
+
+        }
+
 
     </script>
   </body>
