@@ -82,10 +82,10 @@ loadBirthData2 <- function(birthFile)
 # FUNCTION: loadCensusData 
 #
 #
-loadCensusData <- function()
+loadCensusData <- function(file, doReduce = TRUE)
 {
   # Load the Natality data
-  dataFile <- sprintf("%s/CO-EST2014-Alldata.csv", dataPath)
+  dataFile <- sprintf("%s/%s", dataPath, file)
   data <- read.table(dataFile, 
                           header=TRUE, 
                           sep=",", 
@@ -95,8 +95,11 @@ loadCensusData <- function()
                           colClasses=c('character')) 
   
   data <- mutate(data, County.Code=paste(STATE, COUNTY, sep=""))
-  data <- mutate(data, CENSUS2010POPThousands=as.numeric(CENSUS2010POP) / 1000)
-  data <- mutate(data, CENSUS2010POPHundreds=as.numeric(CENSUS2010POP) / 100)
+  if(doReduce)
+  {
+    data <- mutate(data, CENSUS2010POPThousands=as.numeric(CENSUS2010POP) / 1000)
+    data <- mutate(data, CENSUS2010POPHundreds=as.numeric(CENSUS2010POP) / 100)
+  }
   
   #print(summary(data))
   
@@ -240,8 +243,29 @@ birthsPerYearMth <- birthsPerYearMth[order(birthsPerYearMth$Date), ]
 doBirthRateCombine <- TRUE
 if(doBirthRateCombine)
 {
-  censusData <- loadCensusData()
-
+  censusData <- loadCensusData("CO-EST2014-Alldata.csv")
+  censusData09 <- loadCensusData("CO-EST2009-ALLDATA.csv", FALSE)
+  
+  censusLong <- reshape2::melt(censusData, id.vars=c("STNAME", "COUNTY"), variable.name="TYPE")
+  censusLong09 <- reshape2::melt(censusData09, id.vars=c("STNAME", "COUNTY"), variable.name="TYPE")
+  
+  #print(head(censusLong))
+  censusLongYears <- rbind(censusLong09[censusLong09$TYPE == "POPESTIMATE2003" & censusLong09$COUNTY == "000",],
+                           censusLong09[censusLong09$TYPE == "POPESTIMATE2004" & censusLong09$COUNTY == "000",],
+                           censusLong09[censusLong09$TYPE == "POPESTIMATE2005" & censusLong09$COUNTY == "000",],
+                           censusLong09[censusLong09$TYPE == "POPESTIMATE2006" & censusLong09$COUNTY == "000",],
+                           censusLong09[censusLong09$TYPE == "POPESTIMATE2007" & censusLong09$COUNTY == "000",],
+                           censusLong09[censusLong09$TYPE == "POPESTIMATE2008" & censusLong09$COUNTY == "000",],
+                           censusLong09[censusLong09$TYPE == "POPESTIMATE2009" & censusLong09$COUNTY == "000",],
+                           censusLong[censusLong$TYPE == "POPESTIMATE2010" & censusLong$COUNTY == "000",],
+                           censusLong[censusLong$TYPE == "POPESTIMATE2011" & censusLong$COUNTY == "000",],
+                           censusLong[censusLong$TYPE == "POPESTIMATE2012" & censusLong$COUNTY == "000",],
+                           censusLong[censusLong$TYPE == "POPESTIMATE2013" & censusLong$COUNTY == "000",])
+  censusLongYears <- mutate(censusLongYears, Thousands=as.numeric(censusLongYears$value) / 1000)
+  censusLongYears <- mutate(censusLongYears, Year=as.numeric(stringr::str_sub(TYPE, 12)))
+  print(head(censusLongYears))
+  
+  
   #  Pull out just what we need of the census data
   censusCtyPop2010 <- subset(censusData, 
                              censusData$COUNTY == "000", # State Rollup Pop

@@ -107,8 +107,9 @@
                 </p>
                 <p>
                     Based on the <abbr title="Centers for Disease Control" class="initialism">CDC</abbr> data, the United States birth rate reached a peak 
-                    in 2007 of 13.97 births per 1,000 people (2010 Census) or 4,313,113 total births. Since that time, both total births and the birth rate
-                    have fallen. 
+                    in 2007 of 14.33 births per 1,000 people or 4,316,233 total births. Since that time, both total births and the birth rate
+                    have fallen. The purpose of the analysis contained herein is to dive deeper into this phenomenon and reveal some new information regarding
+                    the underlying details.
                 </p>
             </div>
         </div>
@@ -172,7 +173,7 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-md-10">
+            <div class="col-md-9">
                 <!--Div that will hold the Age motion chart-->
                 <h2 id="AgeChart" class="NavHeader">Age Chart</h2>
                 <div id="AgeChartDiv"></div>
@@ -210,6 +211,8 @@
                 <div>
                     The raw data used to produce the visualizations can be download via the following links:
                     <ul>
+                        <li><a onclick="document.write(JSON.stringify(_nationalBirths));" style="cursor:pointer">Annual Births Chart: Total Births/year in JSON format</a></li>
+                        <li><a onclick="document.write(JSON.stringify(_nationalBirthRate));" style="cursor:pointer">Annual Birth Rate Chart: Birth Rate/year in JSON format</a></li>
                         <li><a href="./Data/LA-Natality-Census-Combined.json">State Chart: State / Birth Time-Series in JSON format</a></li>
                         <li><a href="./Data/LA-Natality-Census-Age-Combined.json">Age Chart: Age / Birth Time-Series in JSON format</a></li>
                     </ul>
@@ -243,6 +246,12 @@
                     <li class="Citation" id="PewLivingston">
                         Livingston, Gretchen, and D’Vera Cohn. "U.S. Birth Rate Decline Linked to Recession." Pew Research Centers Social Demographic Trends Project RSS. Pew Research Centers, 05 Apr. 2010. Web. 09 May 2015. 
                         <a href="http://www.pewsocialtrends.org/2010/04/06/us-birth-rate-decline-linked-to-recession/">http://www.pewsocialtrends.org/2010/04/06/us-birth-rate-decline-linked-to-recession/</a>.
+                    </li>
+                    <li>
+                        Novus Partners, NVD3, <a href="http://nvd3.org/examples/line.html">http://nvd3.org/examples/line.html</a>
+                    </li>
+                    <li>
+                        Bostock, Michael, Data-Driven Documents, D3JS, <a href="http://d3js.org/">http://d3js.org/</a>
                     </li>
                 </ol>
                 
@@ -321,7 +330,8 @@
         }
         /* D3 Related Chart Scripts below */ 
         var _data = []
-        
+        var _nationalBirths = []
+        var _nationalBirthRate = []
 
         function initPage() {
             $(function () {
@@ -329,17 +339,16 @@
             })
 
 
+            // Prepare and show the Age of Mother chart.
             d3.json('./Data/LA-Natality-Census-Age-Combined.json', function (data) {
 
                 // First need to convert the data from Google Viz Data format to a format that 
                 // is friendlier to NVD3 and D3.
-                massageDataForNVD3(data)
-
-                nvd3LineChart()
-
+                massageAgeDataForNVD3(data);
+                nvd3LineChartEx(_data, "Time", function (d) { return d3.time.format('%x')(new Date(d)) }, "Births", function (y) { return d3.format(",.f")(y); }, "#AgeLineChart svg");
             })
 
-            var nationalBirths = []
+            // Annual aggregate births and birth rate are directly embedded here.
             var births = new Object();
             births.key = "Births";
             births.values = [];
@@ -354,51 +363,56 @@
             births.values.push([2011, 3953590]);
             births.values.push([2012, 3952841]);
             births.values.push([2013, 3932181]);
-            nationalBirths.push(births);
-            nvd3LineChartEx(nationalBirths, "Year", d3.format("f"), "Births (Thousands)", function (y) { return d3.format(",.f")(y / 1000); }, "#NationalBirths svg");
+            _nationalBirths.push(births);
+            nvd3LineChartEx(_nationalBirths, "Year", d3.format("f"), "Births (Thousands)", function (y) { return d3.format(",.f")(y / 1000); }, "#NationalBirths svg");
 
-            var nationalBirthRate = []
+
             var birthRate = new Object();
             birthRate.key = "Birth Rate";
             birthRate.color = '#33ccff'
             birthRate.values = [];
-            birthRate.values.push([2003, 13.24699]);
-            birthRate.values.push([2004, 13.31858]);
-            birthRate.values.push([2005, 13.40375]);
-            birthRate.values.push([2006, 13.81576]);
-            birthRate.values.push([2007, 13.97990]);
-            birthRate.values.push([2008, 13.75791]);
-            birthRate.values.push([2009, 13.37887]);
-            birthRate.values.push([2010, 12.95366]);
-            birthRate.values.push([2011, 12.80533]);
-            birthRate.values.push([2012, 12.80291]);
-            birthRate.values.push([2013, 12.73599]);
-            nationalBirthRate.push(birthRate);
-            nvd3LineChartEx(nationalBirthRate, "Year", d3.format("f"), "Birth Rate (Per Thousand Population)", d3.format(",.f"), "#NationalBirthRate svg");
+            birthRate.values.push([2003, 14.10]);
+            birthRate.values.push([2004, 14.04]);
+            birthRate.values.push([2005, 14.00]);
+            birthRate.values.push([2006, 14.30]);
+            birthRate.values.push([2007, 14.33]);
+            birthRate.values.push([2008, 13.97]);
+            birthRate.values.push([2009, 13.46]);
+            birthRate.values.push([2010, 12.95]);
+            birthRate.values.push([2011, 12.69]);
+            birthRate.values.push([2012, 12.59]);
+            birthRate.values.push([2013, 12.44]);
+            _nationalBirthRate.push(birthRate);
+            nvd3LineChartEx(_nationalBirthRate, "Year", d3.format("f"), "Birth Rate (Per Thousand Population)", d3.format(",.f"), "#NationalBirthRate svg");
         }
 
-        function massageDataForNVD3(data) {
+        function massageAgeDataForNVD3(data) {
             // First need to convert the data from Google Viz Data format to a format that 
             // is friendlier to NVD3 and D3.
-            currentState = "";
-            aSeries = null;
+            var currentState = "";
+            var aSeries = null;
+            var NDX_AgeGroup = 0;
+            var NDX_Date = 1;
+            var NDX_BirthRate = 3;
+            var NDX_BirthCount = 4;
+
             data.rows.forEach(function (r) {
                 if (r.c[0].v != currentState) {
                     if (aSeries != null) {
                         _data.push(aSeries);
                     }
 
-                    currentState = r.c[0].v
+                    currentState = r.c[NDX_AgeGroup].v
                     aSeries = new Object()
                     aSeries.key = currentState;
                     aSeries.values = new Array();
                 }
 
-                aSeries.values.push([eval("new " + r.c[1].v), eval(r.c[3].v)])
+                aSeries.values.push([eval("new " + r.c[NDX_Date].v), eval(r.c[NDX_BirthCount].v)])
             })
         }
 
-        function nvd3LineChart() {
+        function nvd3AgeLineChart() {
 
             // Initial the line chart
             nv.addGraph(function () {
