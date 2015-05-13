@@ -243,12 +243,15 @@ birthsPerYearMth <- birthsPerYearMth[order(birthsPerYearMth$Date), ]
 doBirthRateCombine <- TRUE
 if(doBirthRateCombine)
 {
+  # Load Census Data
   censusData <- loadCensusData("CO-EST2014-Alldata.csv")
   censusData09 <- loadCensusData("CO-EST2009-ALLDATA.csv", FALSE)
   
+  # Melt into long form
   censusLong <- reshape2::melt(censusData, id.vars=c("STNAME", "COUNTY"), variable.name="TYPE")
   censusLong09 <- reshape2::melt(censusData09, id.vars=c("STNAME", "COUNTY"), variable.name="TYPE")
   
+  # Extract only the years/columns we need, convert to thousands and parse out a Year column
   #print(head(censusLong))
   censusLongYears <- rbind(censusLong09[censusLong09$TYPE == "POPESTIMATE2003" & censusLong09$COUNTY == "000",],
                            censusLong09[censusLong09$TYPE == "POPESTIMATE2004" & censusLong09$COUNTY == "000",],
@@ -266,13 +269,16 @@ if(doBirthRateCombine)
   #print(head(censusLongYears))
   
   #print(censusLongYears[censusLongYears$STNAME == 'Alaska', ])
-    
+  
+  # Slim down to State, Year, Pop in Thousands.
   censusStateYear <- censusLongYears[,c("STNAME", "Year", "Thousands")]
   colnames(censusStateYear) <- c("State", "Year", "CENSUSPOPEstThousands")
-
-  #  Normalize to births per 1000 population
-  #print(head(censusCtyPop2010))
-  #udbc <- join(ubd, censusCtyPop2010, by="State")
+  
+  # Aggregate to annual for use later with Age of Mother.
+  censusAnnual <- aggregate(CENSUSPOPEstThousands ~ Year, censusStateYear, sum)
+  print(head(censusAnnual))
+  
+  # Join the census data to the combined data frame.
   udbc <- join(ubd, censusStateYear, by=c("State", "Year"))
   
   # State Oriented
@@ -284,33 +290,32 @@ if(doBirthRateCombine)
                                     "CENSUSPOPEstThousands")) 
   udbcState <- aggregate(Births ~ State+Year.Code+Month.Code+UnemploymentRate+CENSUSPOPEstThousands, udbcState, sum)
   
-  #udbcState <- mutate(udbcState, BirthsPer100Pop=Births / CENSUS2010POPHundreds)  
+  # Birth Rate for State data 
   udbcState <- mutate(udbcState, BirthsPer1000Pop=Births / CENSUSPOPEstThousands)
   
+  # Show me
   print(head(udbcState))
   
   # Age Oriented
-  #udbcAge <- mutate(udbc, StateAgeOfMother=paste(State, Age.of.Mother, sep=" "))
   udbcAge <- subset(udbc, 
-                       select=c(#"StateAgeOfMother",
+                       select=c(
                                 "Year.Code","Month.Code",
                                 "Births",
                                 "UnemploymentRate",
-                                "CENSUSPOPEstThousands",
                                 "Age.of.Mother"
-                                #,"State"
                                 )
                     )  
+  colnames(udbcAge) <- c("Year", "Month", "Births", "UnemploymentRate", "Age.of.Mother")
 
-  # udbcAge <- aggregate(cbind(Births) ~ StateAgeOfMother+Year.Code+Month.Code+UnemploymentRate+CENSUS2010POPThousands+Age.of.Mother+State, udbcAge, sum)
   udbcAge <- ddply(udbcAge,
-                   .(Year.Code,
-                     Month.Code,
+                   .(Year,
+                     Month,
                      Age.of.Mother),
                    summarise,
                    Births=sum(Births),
-                   UnemploymentRate=mean(UnemploymentRate),
-                   CENSUSPOPEstThousands=sum(CENSUSPOPEstThousands))
+                   UnemploymentRate=mean(UnemploymentRate))
+
+  udbcAge <- join(udbcAge, censusAnnual, by=c("Year"))
   
   udbcAge <- mutate(udbcAge, BirthsPer1000Pop=Births / CENSUSPOPEstThousands)
   print(head(udbcAge))
@@ -325,8 +330,6 @@ if(doBirthRateCombine)
     dataFile <- sprintf("%s/LA-Natality-Census-Age-Combined.csv", dataPath)
     write.table(udbcAge, dataFile,sep=",", row.names=FALSE)  
   }  
-
-  print(udbcState[udbcState$State == "Alaska" & udbcState$Month.Code == 1,])
 }
 ```
 

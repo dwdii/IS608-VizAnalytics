@@ -19,8 +19,12 @@
     <script type="text/javascript" src="https://cdn.rawgit.com/novus/nvd3/v1.7.1/build/nv.d3.min.js"></script>
 
     <style>
+        html {
+            height: 100%
+        }
         body {
           position: relative;
+          
         }
 
         #ContentContainer {
@@ -67,7 +71,7 @@
     
   </head>
    
-  <body data-spy="scroll" data-target="#mysidenav" data-offset="200" onload="initPage()">
+  <body  data-spy="scroll" data-target="#mysidenav">
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
@@ -89,10 +93,10 @@
       </div>
     </nav>
 
-    <div id="ContentContainer" class="container">
+    <div id="ContentContainer" class="container" >
         <div class="row">
             <div class="col-md-10">
-                <div id="Project"></div>
+                <div id="Project" data-offset="20"></div>
                 <h2>U.S. Natality 2003-2013</h2>
                 <h4> An Analysis of Births with Unemployment Rate By State &amp; Age of Mother</h4>
                 <h3>Preface</h3>
@@ -133,11 +137,9 @@
                     <dd>The number of births divided by the number of females age 15 - 44 years old in the given year(s).</dd>
                 </dl>
                 <p>
-                    For the purposes of the current analysis, the 2010 Census population has been used uniformly for all years as opposed to population estimates. This
-                    has the effect of making birth rate comparable in the sense that the values for the period are relative to the 2010 reference year 
-                    (similar to a real vs nominal value in economics). Additionally,
-                    for a population which is increasing and a given number of births/year, the birth rate would drop, whereas with a fixed reference year, an equal number
-                    births will yield no change in birth rate.   
+                    For the purposes of the current analysis, official population estimates for each year were acquired from the 
+                    United States Census Bureau and joined with the CDC birth data inorder to 
+                    compute birth rates for the State and Age of Mother categories.   
                 </p>
                <p>
                     Birth data by Year, Month, State and Mother's Age was acquired from the 
@@ -244,7 +246,7 @@
                         United States Department of Labor, Bureau of Labor Statistics. "The Recession of 2007–2009". Accessed at <a href="http://www.bls.gov/spotlight/2012/recession/pdf/recession_bls_spotlight.pdf" target="_blank">http://www.bls.gov/spotlight/2012/recession/pdf/recession_bls_spotlight.pdf</a> on May 9, 2015
                     </li>
                     <li class="Citation" id="PewLivingston">
-                        Livingston, Gretchen, and D’Vera Cohn. "U.S. Birth Rate Decline Linked to Recession." Pew Research Centers Social Demographic Trends Project RSS. Pew Research Centers, 05 Apr. 2010. Web. 09 May 2015. 
+                        Livingston, Gretchen, and D'Vera Cohn. "U.S. Birth Rate Decline Linked to Recession." Pew Research Centers Social Demographic Trends Project RSS. Pew Research Centers, 05 Apr. 2010. Web. 09 May 2015. 
                         <a href="http://www.pewsocialtrends.org/2010/04/06/us-birth-rate-decline-linked-to-recession/">http://www.pewsocialtrends.org/2010/04/06/us-birth-rate-decline-linked-to-recession/</a>.
                     </li>
                     <li>
@@ -253,12 +255,14 @@
                     <li>
                         Bostock, Michael, Data-Driven Documents, D3JS, <a href="http://d3js.org/">http://d3js.org/</a>
                     </li>
+                    <li>
+                        Google, Motion Chart, <a href="https://developers.google.com/chart/interactive/docs/gallery/motionchart">https://developers.google.com/chart/interactive/docs/gallery/motionchart</a>
+                    </li>
                 </ol>
                 
             </div>
         </div>
         <br />
-        <a href="https://developers.google.com/chart/interactive/docs/gallery/motionchart">Google Motion Chart</a>
         <div id="table_div"></div>
     </div><!-- /.container -->
 
@@ -333,10 +337,10 @@
         var _nationalBirths = []
         var _nationalBirthRate = []
 
-        function initPage() {
-            $(function () {
-                $('#myTab a:last').tab('show')
-            })
+        $(function () {
+
+            //$('body').scrollspy({ target: '#mysidenav' })
+            $('body').scrollspy();
 
 
             // Prepare and show the Age of Mother chart.
@@ -384,7 +388,8 @@
             birthRate.values.push([2013, 12.44]);
             _nationalBirthRate.push(birthRate);
             nvd3LineChartEx(_nationalBirthRate, "Year", d3.format("f"), "Birth Rate (Per Thousand Population)", d3.format(",.f"), "#NationalBirthRate svg");
-        }
+
+        });
 
         function massageAgeDataForNVD3(data) {
             // First need to convert the data from Google Viz Data format to a format that 
