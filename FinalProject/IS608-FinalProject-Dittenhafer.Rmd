@@ -98,7 +98,6 @@ loadCensusData <- function(file, doReduce = TRUE)
   if(doReduce)
   {
     data <- mutate(data, CENSUS2010POPThousands=as.numeric(CENSUS2010POP) / 1000)
-    data <- mutate(data, CENSUS2010POPHundreds=as.numeric(CENSUS2010POP) / 100)
   }
   
   #print(summary(data))
@@ -176,10 +175,11 @@ loadUnemploymentData <- function()
 }
 
 ```
-```{r}
-#bd <-loadBirthData()
-#head(bd)
 
+The following code loads the 2 birth datasets and binds them into a single data frame. Local area unemployment
+data is also loaded.
+
+```{r}
 birthFile <- sprintf("%s/Natality-2007-2013-YearMonthStateAge.txt", dataPath)
 bd0713 <- loadBirthData2(birthFile)
 
@@ -315,7 +315,15 @@ if(doBirthRateCombine)
                    Births=sum(Births),
                    UnemploymentRate=mean(UnemploymentRate))
 
+  # Join census annuals and revert col names for consistency with State data.
   udbcAge <- join(udbcAge, censusAnnual, by=c("Year"))
+  colnames(udbcAge) <- c("Year.Code", 
+                         "Month.Code", 
+                         "Age.of.Mother", 
+                         "Births", 
+                         "UnemploymentRate", 
+                         "CENSUSPOPEstThousands")
+
   
   udbcAge <- mutate(udbcAge, BirthsPer1000Pop=Births / CENSUSPOPEstThousands)
   print(head(udbcAge))

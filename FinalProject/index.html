@@ -54,9 +54,9 @@
             margin-bottom: 14px;
         }
 
-        #AgeLineChart {
+        #AgeLineChart, #AgeRateLineChart {
             height: 480px;
-        }
+        }       
 
         .Citation {
             margin-bottom: 7px
@@ -176,20 +176,35 @@
         </div>
         <div class="row">
             <div class="col-md-9">
-                <!--Div that will hold the Age motion chart-->
                 <h2 id="AgeChart" class="NavHeader">Age Chart</h2>
-                <div id="AgeChartDiv"></div>
-                <div id="AgeLineChart"><svg></svg></div>
-            </div>
+                <div id="AgeChartTabs" role="tabpanel">
+
+                  <!-- Nav tabs -->
+                  <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active"><a href="#BirthCountTab" aria-controls="BirthCountTab" role="tab" data-toggle="tab">Birth Count</a></li>
+                    <li role="presentation"><a href="#BirthRateTab" aria-controls="BirthRateTab" role="tab" data-toggle="tab">Birth Rate</a></li>
+                  </ul>
+
+                  <!-- Tab panes -->
+                  <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane active" id="BirthCountTab"><div id="AgeLineChart"><svg></svg></div></div>
+                    <div role="tabpanel" class="tab-pane" id="BirthRateTab"><div id="AgeRateLineChart"><svg></svg></div></div>
+                  </div>
+
+                </div>
+                <!--Div that will hold the Age motion chart (if we use it)-->
+                 <div id="AgeChartDiv"></div>
+           </div>
         </div>
         <div class="row">
             <div class="col-md-10">
                 <p>
-                The line chart above shows the birth rate per 1000 people split up by the age of the mother. 
+                The line charts above shows the births and birth rate per 1000 people split up by the age of the mother. 
                 Some interesting changes can be seen though this visualization. 
                 </p>
                 <ul>
-                    <li>For births to mothers age 15-19, a peak August 2007 at 0.13 births/1000 begins a steady decline ~0.08 births/1000 in August 2013, a 38% drop for this age range.</li>
+                    <li>For births to mothers age 15-19, a peak August 2007 at 0.13 births/1000 begins a steady decline ~0.08 births/1000 in August 2013, 
+                        a 38% drop for this age range. This is significant because it suggests high school pregnancies have been declining in recent years.</li>
                     <li>Prior to February 2010, mothers 20-24 were second only to the 25-29 group in birth rate, but starting in March 2011, the 30-34 group's birth rate surpases the 25-29 year olds.</li>
                     <li>It appears mothers 20-29 contributed the most to the increase in births in the 2006-2007 time period.</li>
                 </ul>
@@ -285,7 +300,6 @@
 
     <!--Load the AJAX API and Google Charts-->
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-    <!--script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></!--script-->
 
     <script type="text/javascript">
 
@@ -342,14 +356,29 @@
             //$('body').scrollspy({ target: '#mysidenav' })
             $('body').scrollspy();
 
+            $('#AgeChartTabs a').click(function (e) {
+                e.preventDefault()
+                $(this).tab('show')
+                if (document.createEvent) { // W3C
+                    var ev = document.createEvent('Event');
+                    ev.initEvent('resize', true, true);
+                    window.dispatchEvent(ev);
+                } else { // IE
+                    document.fireEvent('onresize');
+                } // Added this line to force NVD3 to redraw the chart
+            })
+
 
             // Prepare and show the Age of Mother chart.
             d3.json('./Data/LA-Natality-Census-Age-Combined.json', function (data) {
 
                 // First need to convert the data from Google Viz Data format to a format that 
                 // is friendlier to NVD3 and D3.
-                massageAgeDataForNVD3(data);
-                nvd3LineChartEx(_data, "Time", function (d) { return d3.time.format('%x')(new Date(d)) }, "Births", function (y) { return d3.format(",.f")(y); }, "#AgeLineChart svg");
+                countData = massageAgeDataForNVD3(data, NDX_BirthCount);
+                nvd3LineChartEx(countData, "Time", function (d) { return d3.time.format('%x')(new Date(d)) }, "Births", function (y) { return d3.format(",.f")(y); }, "#AgeLineChart svg");
+
+                rateData = massageAgeDataForNVD3(data, NDX_BirthRate);
+                nvd3LineChartEx(rateData, "Time", function (d) { return d3.time.format('%x')(new Date(d)) }, "Birth Rate / 1000 Population", function (y) { return d3.format(",.3f")(y); }, "#AgeRateLineChart svg");
             })
 
             // Annual aggregate births and birth rate are directly embedded here.
@@ -391,20 +420,23 @@
 
         });
 
-        function massageAgeDataForNVD3(data) {
+        var NDX_AgeGroup = 0;
+        var NDX_Date = 1;
+        var NDX_BirthRate = 3;
+        var NDX_BirthCount = 4;
+
+        function massageAgeDataForNVD3(data, ndxY) {
             // First need to convert the data from Google Viz Data format to a format that 
             // is friendlier to NVD3 and D3.
+            var newData = []
             var currentState = "";
             var aSeries = null;
-            var NDX_AgeGroup = 0;
-            var NDX_Date = 1;
-            var NDX_BirthRate = 3;
-            var NDX_BirthCount = 4;
+
 
             data.rows.forEach(function (r) {
                 if (r.c[0].v != currentState) {
                     if (aSeries != null) {
-                        _data.push(aSeries);
+                        newData.push(aSeries);
                     }
 
                     currentState = r.c[NDX_AgeGroup].v
@@ -413,44 +445,13 @@
                     aSeries.values = new Array();
                 }
 
-                aSeries.values.push([eval("new " + r.c[NDX_Date].v), eval(r.c[NDX_BirthCount].v)])
+                aSeries.values.push([eval("new " + r.c[NDX_Date].v), eval(r.c[ndxY].v)])
             })
+
+            return newData;
         }
 
-        function nvd3AgeLineChart() {
-
-            // Initial the line chart
-            nv.addGraph(function () {
-                var chart = nv.models.lineChart()
-                              .margin({ left: 90 })  //Adjust chart margins to give the x-axis some breathing room.
-                              .x(function (d) { return d[0] })   //We can modify the data accessor functions...
-                              .y(function (d) { return d[1] })   //...in case your data is formatted differently.
-                              .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
-                              .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
-                              .showYAxis(true)        //Show the y-axis
-                              .showXAxis(true)        //Show the x-axis
-                ;
-
-                chart.xAxis     //Chart x-axis settings
-                    .axisLabel('Time')
-                    .tickFormat(function (d) {
-                        return d3.time.format('%x')(new Date(d))
-                    });
-
-                chart.yAxis     //Chart y-axis settings
-                    .axisLabel('Birth Rate / 1,000 People')
-                    .tickFormat(d3.format(',.3f'));
-
-                d3.select('#AgeLineChart svg')    //Select the <svg> element you want to render the chart in.   
-                    .datum(_data)         //Populate the <svg> element with chart data...
-                    .call(chart);          //Finally, render the chart!
-                    
-                //Update the chart when window resizes.
-                nv.utils.windowResize(function () { chart.update() });
-                return chart;
-            });
-
-        }
+        var _charts = []
 
         function nvd3LineChartEx(theData, xLabel, xFormat, yLabel, yFormat, id) {
 
@@ -478,8 +479,12 @@
                     .datum(theData)         //Populate the <svg> element with chart data...
                     .call(chart);          //Finally, render the chart!
 
+                _charts.push(chart);
+
                 //Update the chart when window resizes.
-                nv.utils.windowResize(function () { chart.update() });
+                nv.utils.windowResize(function () {
+                    chart.update(); //alert("+");
+                });
                 return chart;
             });
 
