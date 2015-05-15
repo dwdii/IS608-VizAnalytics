@@ -44,6 +44,8 @@ require.package("dplyr")
 dataPath <- "C:/Code/R/IS608-VizAnalytics/FinalProject/Data/"
 ```
 
+The `loadBirthData2` function, shown below, was used to load the CDC natality data from a local file into R for manipulation.
+
 ```{r}
 #####
 # FUNCTION: loadBirthData2 
@@ -77,6 +79,12 @@ loadBirthData2 <- function(birthFile)
   
   return (birthDataWoNa)
 }
+
+```
+
+The `loadCensusData` function, shown below, was used to load the census population estimates data from a local file into R for manipulation.
+
+```{r}
 
 #####
 # FUNCTION: loadCensusData 
@@ -204,6 +212,8 @@ if(bSaveUnempData)
 }
 ```
 
+Here we update column names in the data frames inorder to facilitate the `plyr::join` operation.
+
 ```{r}
 colnames(bd0313) <- c("Year",  "Year.Code",	
                              "Month",	"Month.Code",	"State",	
@@ -224,10 +234,9 @@ if(bSave)
 }
 ```
 
-### Add Census and create Birth Rate.
+### Add Census and Create Birth Rate.
 
 ```{r}
-
 # Transform raw year/month columns into a Date column
 ubd <- dplyr::mutate(ubd, 
                         Date = lubridate::parse_date_time(sprintf("%s-%s-01", 
@@ -328,8 +337,10 @@ if(doBirthRateCombine)
   udbcAge <- mutate(udbcAge, BirthsPer1000Pop=Births / CENSUSPOPEstThousands)
   print(head(udbcAge))
   
-  
-  bSave <- TRUE
+  # Enable this bSave if you want to emit the massaged data as CSV
+  # This was used to pass the data over to a Python script for conversion to 
+  # Google Data Table formated JSON files.
+  bSave <- FALSE
   if(bSave)
   {
     dataFile <- sprintf("%s/LA-Natality-Census-Combined.csv", dataPath)
@@ -339,11 +350,4 @@ if(doBirthRateCombine)
     write.table(udbcAge, dataFile,sep=",", row.names=FALSE)  
   }  
 }
-```
-
-### References
-
-```{r, results='asis', echo=FALSE}
-BibOptions(style="html", bib.style="authortitle")
-bibliography()
 ```
