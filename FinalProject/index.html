@@ -39,7 +39,7 @@
         }
 
         .NavHeader {
-            padding-top:55px;
+            padding-top:50px;
         }
 
         #NationalBirths {
@@ -85,9 +85,9 @@
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li><a href="http://jlaurito.github.io/CUNY_IS608/">IS608 Final Projects</a></li>
-            <li><a href="http://dwdii.github.io/">Daniel Dittenhafer</a></li>
-            <li><a href="http://github.com/dwdii/">GitHub</a></li>
+            <li><a href="http://jlaurito.github.io/CUNY_IS608/" target="_blank">IS608 Final Projects</a></li>
+            <li><a href="http://dwdii.github.io/" target="_blank">Daniel Dittenhafer</a></li>
+            <li><a href="http://github.com/dwdii/" target="_blank">GitHub</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -99,6 +99,7 @@
                 <div id="Project" data-offset="20"></div>
                 <h2>U.S. Natality 2003-2013</h2>
                 <h4> An Analysis of Births with Unemployment Rate By State &amp; Age of Mother</h4>
+                <h5> By Daniel Dittenhafer</h5>
                 <h3>Preface</h3>
                 <p>This project was undertaken as part of the Knowledge &amp; Visual Analytics (IS608) course requirements for the <a href="http://sps.cuny.edu/programs/ms_dataanalytics">Master of Science, Data Analytics</a> program at <a href="http://www.cuny.edu/index.html">City University of New York (CUNY)</a>.</p>
 
@@ -112,7 +113,7 @@
                 <p>
                     Based on the <abbr title="Centers for Disease Control" class="initialism">CDC</abbr> data, the United States birth rate reached a peak 
                     in 2007 of 14.33 births per 1,000 people or 4,316,233 total births. Since that time, both total births and the birth rate
-                    have fallen. The purpose of the analysis contained herein is to dive deeper into this phenomenon and reveal some new information regarding
+                    have fallen. The purpose of the analysis contained herein is to dive deeper into this phenomenon and possibly reveal some new information regarding
                     the underlying details.
                 </p>
             </div>
@@ -138,21 +139,38 @@
                 </dl>
                 <p>
                     For the purposes of the current analysis, official population estimates for each year were acquired from the 
-                    United States Census Bureau and joined with the CDC birth data inorder to 
-                    compute birth rates for the State and Age of Mother categories.   
+                    <a href="http://www.census.gov/popest/index.html" target="_blank">United States Census Bureau</a> and joined with the CDC birth data inorder to 
+                    compute birth rates for the State and Age of Mother categories <a href="#Census2009" class="InTextRef">1</a>&nbsp;<a href="#Census2014" class="InTextRef">2</a>.   
                 </p>
                <p>
-                    Birth data by Year, Month, State and Mother's Age was acquired from the 
+                    Birth counts by Year, Month, State and Mother's Age were acquired from the 
                     <abbr title="Centers for Disease Control" class="initialism">CDC</abbr> <a href="http://wonder.cdc.gov/" target="_blank">WONDER website</a>
-                    <a href="#Cdc2003" class="InTextRef">2</a>&nbsp;<a href="#Cdc2007" class="InTextRef">3</a>. 
+                    <a href="#Cdc2003" class="InTextRef">3</a>&nbsp;<a href="#Cdc2007" class="InTextRef">4</a>. 
                 </p>
                 <p>
                     The Bureau of Labor Statistics (BLS), under the United States Department of Labor, compiles unemployment data for the nation as a whole, as well
                     as local areas. The state specific unemployment rates for the period 2003-2013 were acquired from 
                     <abbr title="Bureau of Labor Statistics" class="initialism">BLS</abbr>
-                    <a href="http://www.bls.gov/data/#unemployment">Local Area Unemployment Statistics</a><a href="#Cdc2007" class="InTextRef">5</a>.
+                    <a href="http://www.bls.gov/data/#unemployment" target="_blank">Local Area Unemployment Statistics</a> <a href="#BlsLaus" class="InTextRef">6</a>.
                 </p>
-                
+                <p>
+                    It should be noted that the CDC removes some values from the data sets for privacy reasons. 
+                    The following quote is taken from their dataset documentation page. 
+                </p>
+                <blockquote style="font-size:smaller;">
+                    <p>
+                        Vital statistics data are suppressed due to confidentiality constraints, in order to protect personal privacy. 
+                        The term "Suppressed" replaces sub-national births counts, birth rates and fertility rates, when the figure represents zero to nine (0-9) persons.  
+                    </p>
+                    <footer>Assurance of Confidentiality Constraints, CDC WONDER</footer>
+                </blockquote>
+                <p>
+                    As a result of the confidentiality constraints,
+                    summation of sub-category birth counts typically does not equal the national leval aggregate value. The 
+                    <a href="http://wonder.cdc.gov/DataUse.html#" target="_blank">CDC Data Use Restrictions</a> with regard
+                    to these confidentiality constraints also generally prevent disclosure of the specific differences between sub-category births 
+                    and the national aggregates.
+                </p>               
             </div>
         </div>
         <div class="row">
@@ -166,11 +184,12 @@
             <div class="col-md-9">
                 <p>
                 The motion bubble chart, above, initially shows the snapshot of birth rate and unemployment rate per State in early August 2007, at the peak of birth activity
-                    during the analyzed period. This is also just before official start of the recession in December 2007 <a href="#BlsRecession" class="InTextRef">6</a>. 
+                    during the analyzed period. This is also just before the official start of the recession in December 2007 <a href="#BlsRecession" class="InTextRef">7</a>. 
                     By pressing the play button in the lower left hand corner of the chart, you can watch as the recession hits, unemployment surges 
-                    and births reduce off their peaks. You may notice there is not a clear relationship between births and unemployment. In fact, while 
-                    many states have overall reduced births during the high unemployment period of 2009-2010, other states including Utah tend to maintain 
-                    their birth rate during this time.
+                    and births reduce off their peaks. You may notice there is not a clear relationship between births and unemployment. Indeed, while 
+                    many states have overall reduced births during the high unemployment period of 2009-2010, other states such as Vermont tend to maintain 
+                    their birth rate during this time. While the increase in births may be related to the business cycle's expansion, it is not as clear that the reduction
+                    in births is specifically related to the rise in unemployment rate <a href="#PewLivingston" class="InTextRef">8</a>. 
                 </p>
             </div>
         </div>
@@ -203,21 +222,11 @@
                 Some interesting changes can be seen though this visualization. 
                 </p>
                 <ul>
-                    <li>For births to mothers age 15-19, a peak August 2007 at 0.13 births/1000 begins a steady decline ~0.08 births/1000 in August 2013, 
-                        a 38% drop for this age range. This is significant because it suggests high school pregnancies have been declining in recent years.</li>
-                    <li>Prior to February 2010, mothers 20-24 were second only to the 25-29 group in birth rate, but starting in March 2011, the 30-34 group's birth rate surpases the 25-29 year olds.</li>
+                    <li>For births to mothers age 15-19, a peak in August 2007 at 40,340 births (0.13 births/1000) begins a steady decline to 24,316 (~0.08 births/1000) in August 2013, 
+                        a 39% drop for this age group. This is significant because it suggests high school pregnancies have been declining in recent years.</li>
+                    <li>Prior to March 2010, mothers 20-24 were second only to the 25-29 group in birth rate, but by March 2011, the 30-34 group's birth rate has well surpased the 25-29 year olds.</li>
                     <li>It appears mothers 20-29 contributed the most to the increase in births in the 2006-2007 time period.</li>
                 </ul>
-                <p>
-                    It should be noted that the CDC removes some values from the data sets for privacy reasons. The following quote is taken from their dataset documentation page. 
-                </p>
-                <blockquote style="font-size:smaller;">
-                    <p>
-                        Vital statistics data are suppressed due to confidentiality constraints, in order to protect personal privacy. 
-                        The term "Suppressed" replaces sub-national births counts, birth rates and fertility rates, when the figure represents zero to nine (0-9) persons.  
-                    </p>
-                    <footer>Assurance of Confidentiality Constraints, CDC WONDER</footer>
-                </blockquote>
             </div>
         </div>
 
@@ -242,7 +251,10 @@
                 <!-- Div for the References section -->
                 <h2 id="Reference" class="NavHeader">References</h2>
                 <ol>               
-                    <li class="Citation" >
+                    <li class="Citation" id="Census2009">
+                        United States Department of Commerce, Census Bureau. Accessed at <a href="http://www.census.gov/popest/data/historical/2000s/vintage_2009/datasets.html" target="_blank">http://www.census.gov/popest/data/historical/2000s/vintage_2009/datasets.html</a> on May 11, 2015
+                    </li>
+                    <li class="Citation" id="Census2014">
                         United States Department of Commerce, Census Bureau. Accessed at <a href="http://www.census.gov/popest/data/counties/totals/2014/CO-EST2014-alldata.html" target="_blank">http://www.census.gov/popest/data/counties/totals/2014/CO-EST2014-alldata.html</a> on April 14, 2015
                     </li>
                     <li class="Citation" id="Cdc2003">
@@ -258,7 +270,7 @@
                         United States Department of Labor (US DOL), Bureau of Labor Statistics (BLS), Local Area Unemployment Statistics (LAUS) Accessed at <a href="http://download.bls.gov/pub/time.series/la/" target="_blank">http://download.bls.gov/pub/time.series/la/</a> on Mar 30, 2015 9:21 PM
                     </li>
                     <li class="Citation" id="BlsRecession">
-                        United States Department of Labor, Bureau of Labor Statistics. "The Recession of 2007–2009". Accessed at <a href="http://www.bls.gov/spotlight/2012/recession/pdf/recession_bls_spotlight.pdf" target="_blank">http://www.bls.gov/spotlight/2012/recession/pdf/recession_bls_spotlight.pdf</a> on May 9, 2015
+                        United States Department of Labor, Bureau of Labor Statistics. "The Recession of 2007-2009". Accessed at <a href="http://www.bls.gov/spotlight/2012/recession/pdf/recession_bls_spotlight.pdf" target="_blank">http://www.bls.gov/spotlight/2012/recession/pdf/recession_bls_spotlight.pdf</a> on May 9, 2015
                     </li>
                     <li class="Citation" id="PewLivingston">
                         Livingston, Gretchen, and D'Vera Cohn. "U.S. Birth Rate Decline Linked to Recession." Pew Research Centers Social Demographic Trends Project RSS. Pew Research Centers, 05 Apr. 2010. Web. 09 May 2015. 
