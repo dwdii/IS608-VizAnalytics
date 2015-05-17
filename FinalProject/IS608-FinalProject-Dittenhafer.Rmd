@@ -351,3 +351,7 @@ if(doBirthRateCombine)
   }  
 }
 ```
+
+### Finally, convert to JSON for easlier use in by Google Charts
+
+The [PanGviz](https://github.com/dwdii/PanGviz) Python package is used to convert the LA-Natality-xyz.csv files listed above into Google Data Table formated JSON.
